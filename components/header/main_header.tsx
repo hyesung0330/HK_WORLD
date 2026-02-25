@@ -22,14 +22,14 @@ export default function Header() {
             {/* --- Left: Logo --- */}
             <div className="flex items-center gap-8">
                 <h1 className="text-sm font-black tracking-widest uppercase cursor-pointer" onClick={() => router.push('/')}>
-                    HK.WORLD
+                    HK.WRITE
                 </h1>
                 {/* 글쓰기 페이지가 아닐 때만 메뉴 표시 */}
                 {!isWritePage && (
                     <div className="hidden lg:flex gap-6 text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
-                        <span className="hover:opacity-100 cursor-pointer transition">커뮤니티</span>
+                        <span onClick={() => router.push('/main/content/content_comunity')} className="hover:opacity-100 cursor-pointer transition">커뮤니티</span>
                         <span onClick={() => router.push('/main/content/content_c')} className="hover:opacity-100 cursor-pointer transition">컬럼보기</span>
-                        <span className="hover:opacity-100 cursor-pointer transition">홍보하기</span>
+                        <span onClick={() => router.push('/main/content/content_sell')} className="hover:opacity-100 cursor-pointer transition">홍보하기</span>
                     </div>
                 )}
             </div>

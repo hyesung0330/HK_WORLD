@@ -77,7 +77,7 @@ export default function ColumnsPage() {
                     </div>
 
                     <Button
-                        onClick={() => router.push('/write')}
+                        onClick={() => router.push('/main/write')}
                         className="rounded-full bg-blue-600 hover:bg-blue-700 text-white font-black px-6 py-6 gap-2 shadow-lg shadow-blue-500/20"
                     >
                         <LuPencilLine size={18} />

@@ -58,7 +58,7 @@ export default function CommunityPage() {
                         EVERYONE'S<br/>THOUGHTS
                     </h2>
                     <p className={`max-w-md text-sm leading-relaxed font-medium ${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>
-                        당신의 프로젝트를 알리고, 정보를 얻으며, <br/>
+                        당신을 알리고, 정보를 얻으며, <br/>
                         세상의 모든 사람들과 소통해보세요.
                     </p>
                 </header>
