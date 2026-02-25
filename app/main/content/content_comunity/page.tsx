@@ -61,7 +61,7 @@ export default function CommunityFeedPage() {
                             community
                         </h2>
                         <p className={`text-sm font-bold tracking-tight ${darkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
-                            나의 이야기를 들려주세요
+                            당신의 이야기를 들려주세요
                         </p>
                     </div>
                     <Button
@@ -78,7 +78,7 @@ export default function CommunityFeedPage() {
                     {currentPosts.map((post) => (
                         <Card
                             key={post.id}
-                            onClick={() => router.push(`/main/content/content_c/${post.id}`)}
+                            onClick={() => router.push(`/main/content/content_comunity/${post.id}`)}
                             className={`group cursor-pointer border-none overflow-hidden transition-all duration-500 hover:-translate-y-2
                                 ${darkMode ? 'bg-[#121212] hover:bg-[#181818]' : 'bg-white shadow-xl shadow-slate-200/50'}`}
                         >

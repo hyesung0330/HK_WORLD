@@ -10,8 +10,121 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { LuArrowLeft, LuShare2, LuMessageSquare, LuHeart } from "react-icons/lu";
+import { Input } from "@/components/ui/input";
 
+// --- 내부 컴포넌트: 댓글 섹션 ---
+function CommentSection({ darkMode }: { darkMode: boolean }) {
+    const [replyingTo, setReplyingTo] = useState<number | null>(null);
+
+    const comments = [
+        {
+            id: 1,
+            author: "CreativeDesigner",
+            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=1",
+            text: "벤토 그리드 레이아웃 설명이 정말 명쾌하네요! 실무에 바로 적용해봐야겠어요.",
+            date: "2H AGO",
+            replies: [
+                {
+                    id: 101,
+                    author: "Hwangking",
+                    avatar: "https://github.com/shadcn.png",
+                    text: "도움이 되셨다니 다행입니다! 적용하시다가 궁금한 점 있으면 언제든 물어보세요.",
+                    date: "1H AGO",
+                }
+            ]
+        },
+        {
+            id: 2,
+            author: "DevOps_Master",
+            avatar: "https://api.dicebear.com/7.x/avataaars/svg?seed=2",
+            text: "배경색이 굉장히 고급스럽네요. 다크모드 팔레트 정보 공유 가능할까요?",
+            date: "30M AGO",
+            replies: []
+        }
+    ];
+
+    return (
+        <section className="mt-20 space-y-10">
+            <h3 className="text-xl font-black italic uppercase tracking-tighter flex items-center gap-3">
+                <span>COMMENTS</span>
+                <span className="text-blue-500 font-mono text-lg">({comments.length})</span>
+            </h3>
+
+            {/* 댓글 입력창 */}
+            <div className={`flex gap-4 p-5 rounded-[24px] border transition-all
+                ${darkMode ? 'bg-white/5 border-white/10 focus-within:border-blue-500/50' : 'bg-white border-slate-200 focus-within:border-blue-500'}`}>
+                <div className="flex-1 flex items-center gap-3">
+                    <Input
+                        placeholder="LEAVE A THOUGHT..."
+                        className="bg-transparent border-none focus-visible:ring-0 placeholder:text-[10px] placeholder:font-black placeholder:tracking-widest font-medium shadow-none"
+                    />
+                    <Button className="rounded-xl bg-blue-600 hover:bg-blue-700 font-black italic text-[10px] tracking-widest px-6 shadow-none text-white">
+                        POST
+                    </Button>
+                </div>
+            </div>
+
+            {/* 댓글 리스트 */}
+            <div className="space-y-12">
+                {comments.map((comment) => (
+                    <div key={comment.id} className="space-y-6">
+                        {/* 부모 댓글 */}
+                        <div className="flex gap-4 group">
+                            <Avatar className="w-10 h-10 shrink-0 grayscale">
+                                <AvatarImage src={comment.avatar} />
+                                <AvatarFallback>{comment.author[0]}</AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 space-y-2">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-sm font-black italic uppercase tracking-tight">{comment.author}</span>
+                                        <span className="text-[9px] font-bold opacity-30 tracking-widest leading-none">{comment.date}</span>
+                                    </div>
+                                    <button className="text-[9px] font-black opacity-0 group-hover:opacity-40 tracking-widest uppercase transition-opacity">MORE</button>
+                                </div>
+                                <p className={`text-sm leading-relaxed ${darkMode ? 'text-zinc-400' : 'text-slate-600'}`}>{comment.text}</p>
+                                <button
+                                    onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                                    className="text-[9px] font-black text-blue-500 uppercase tracking-[0.2em] pt-1 hover:line-through"
+                                >
+                                    [ REPLY ]
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* 대댓글 (Thread Line 적용) */}
+                        {comment.replies.map((reply) => (
+                            <div key={reply.id} className="pl-12 flex gap-4">
+                                <div className="w-px h-full bg-blue-500/20 self-stretch relative">
+                                    <div className="absolute top-4 left-0 w-3 h-px bg-blue-500/20" />
+                                </div>
+                                <div className="flex-1 space-y-2 bg-blue-500/5 p-4 rounded-2xl border border-blue-500/10">
+                                    <div className="flex items-center gap-3">
+                                        <span className="text-sm font-black italic text-blue-500 uppercase">{reply.author}</span>
+                                        <span className="text-[9px] font-bold opacity-30 tracking-widest">{reply.date}</span>
+                                    </div>
+                                    <p className={`text-sm leading-relaxed ${darkMode ? 'text-zinc-400' : 'text-slate-600'}`}>{reply.text}</p>
+                                </div>
+                            </div>
+                        ))}
+
+                        {/* 답글 입력창 활성화 */}
+                        {replyingTo === comment.id && (
+                            <div className="pl-12 animate-in fade-in slide-in-from-top-2">
+                                <div className={`flex items-center gap-3 p-3 rounded-2xl border ${darkMode ? 'bg-white/5 border-white/10' : 'bg-slate-100 border-slate-200'}`}>
+                                    <Input autoFocus placeholder="TYPE YOUR REPLY..." className="bg-transparent border-none focus-visible:ring-0 text-[10px] font-bold tracking-widest shadow-none" />
+                                    <Button size="sm" className="rounded-lg bg-zinc-800 text-[9px] font-black tracking-widest text-white shadow-none px-4">SUBMIT</Button>
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                ))}
+            </div>
+        </section>
+    );
+}
+
+// --- 메인 상세 페이지 컴포넌트 ---
 export default function PostDetailPage() {
     const { id } = useParams();
     const router = useRouter();
@@ -24,19 +137,12 @@ export default function PostDetailPage() {
 
     if (!mounted) return null;
 
-    // 실제로는 API를 통해 id값으로 데이터를 가져와야 합니다.
     const post = {
-        title: "2026년 웹 디자인 트렌드 정리 (Bento Grid 중심으로)",
-        category: "디자인",
+        title: "2026 WEB DESIGN TRENDS: BENTO GRID",
+        category: "DESIGN",
         author: "Hwangking",
-        date: "2026. 02. 25",
-        content: `
-            최근 유행하는 벤토 그리드(Bento Grid) 레이아웃은 정보를 구획화하여 시각적으로 정돈된 느낌을 줍니다. 
-            특히 모바일 대응이 쉽고, 카드 형태의 디자인이 주는 신뢰감이 높습니다.
-
-            디자인의 핵심은 적절한 여백과 둥근 모서리(border-radius)의 일관성입니다. 
-            이번 포스트에서는 실제 서비스에 적용할 때 주의해야 할 점들을 살펴보겠습니다...
-        `,
+        date: "FEB 25, 2026",
+        content: `최근 유행하는 벤토 그리드(Bento Grid) 레이아웃은 정보를 구획화하여 시각적으로 정돈된 느낌을 줍니다. 특히 모바일 대응이 쉽고, 카드 형태의 디자인이 주는 신뢰감이 높습니다. 디자인의 핵심은 적절한 여백과 둥근 모서리의 일관성입니다.`,
         views: 1240,
         likes: 42,
         avatar: "https://github.com/shadcn.png"
@@ -49,78 +155,66 @@ export default function PostDetailPage() {
             <MainHeader />
 
             <main className="max-w-3xl mx-auto px-6 pt-32 pb-20">
-                {/* 상단 액션바 */}
-                <div className="flex items-center justify-between mb-12">
-                    <Button
-                        variant="ghost"
+                {/* 상단 액션바 (아이콘 없이 텍스트로) */}
+                <div className="flex items-center justify-between mb-16">
+                    <button
                         onClick={() => router.back()}
-                        className="group flex items-center gap-2 -ml-4 opacity-50 hover:opacity-100 transition-all"
+                        className="group flex items-center gap-2 opacity-40 hover:opacity-100 transition-all"
                     >
-                        <LuArrowLeft className="group-hover:-translate-x-1 transition-transform" />
-                        <span className="text-[10px] font-black uppercase tracking-widest">Back to List</span>
-                    </Button>
-                    <div className="flex items-center gap-2">
-                        <Button variant="ghost" size="icon" className="rounded-full"><LuShare2 size={18} /></Button>
-                    </div>
+                        <span className="text-[10px] font-black uppercase tracking-[0.3em] group-hover:-translate-x-1 transition-transform">← BACK</span>
+                    </button>
+                    <button className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 hover:opacity-100 italic underline underline-offset-4">SHARE</button>
                 </div>
 
-                {/* 기사 헤더 섹션 */}
+                {/* 포스트 헤더 */}
                 <header className="space-y-8 mb-16">
-                    <Badge className="bg-blue-600 hover:bg-blue-600 text-white font-black italic rounded-md px-3">
+                    <Badge className="bg-blue-600 hover:bg-blue-600 text-white font-black italic rounded-md px-4 py-1 border-none shadow-none text-[10px] tracking-widest uppercase">
                         {post.category}
                     </Badge>
-                    <h1 className="text-5xl md:text-6xl font-black tracking-tighter leading-[1.1] break-keep">
+                    <h1 className="text-6xl md:text-8xl font-black tracking-tighter leading-[0.9] break-keep italic uppercase">
                         {post.title}
                     </h1>
 
-                    <div className="flex items-center justify-between pt-4">
+                    <div className="flex items-center justify-between pt-6 border-t border-white/5">
                         <div className="flex items-center gap-4">
-                            <Avatar className="w-12 h-12 border-2 border-blue-500/20">
-                                <AvatarImage src={post.avatar} />
-                                <AvatarFallback>HK</AvatarFallback>
-                            </Avatar>
                             <div className="flex flex-col">
-                                <span className="text-sm font-black italic tracking-tight">{post.author}</span>
-                                <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest">{post.date}</span>
+                                <span className="text-sm font-black italic uppercase tracking-tight leading-none mb-1">{post.author}</span>
+                                <span className="text-[10px] font-bold opacity-30 tracking-[0.2em]">{post.date}</span>
                             </div>
                         </div>
-                        <div className="flex items-center gap-6 opacity-40 text-[10px] font-black tracking-widest uppercase">
-                            <span>Views {post.views}</span>
+                        <div className="text-[10px] font-black tracking-[0.3em] uppercase opacity-30">
+                            VIEW / {post.views}
                         </div>
                     </div>
                 </header>
 
-                <Separator className={`mb-16 ${darkMode ? 'bg-white/5' : 'bg-slate-200'}`} />
-
-                {/* 본문 섹션 */}
-                <article className={`text-lg md:text-xl leading-relaxed font-medium space-y-8 mb-20
+                {/* 본문 기사 */}
+                <article className={`text-xl md:text-2xl leading-relaxed font-medium mb-24
                     ${darkMode ? 'text-zinc-400' : 'text-slate-600'}`}>
-                    <p className="first-letter:text-5xl first-letter:font-black first-letter:mr-3 first-letter:float-left first-letter:text-blue-500">
+                    <p className="first-letter:text-6xl first-letter:font-black first-letter:mr-4 first-letter:float-left first-letter:text-blue-500 italic">
                         {post.content}
                     </p>
-                    {/* 추가 본문 내용이 들어갈 자리 */}
                 </article>
 
-                {/* 하단 인터랙션바 */}
-                <div className={`flex items-center justify-center gap-4 py-12 border-y transition-colors
+                {/* 좋아요 버튼 섹션 */}
+                <div className={`flex flex-col items-center gap-6 py-20 border-y transition-colors mb-20
                     ${darkMode ? 'border-white/5' : 'border-slate-200'}`}>
-                    <Button variant="outline" className="rounded-full px-8 py-6 gap-2 font-black italic tracking-widest group">
-                        <LuHeart className="group-hover:text-red-500 transition-colors" />
+                    <button className={`px-12 py-6 border-2 rounded-full font-black italic tracking-[0.3em] transition-all shadow-none
+                        ${darkMode ? 'border-white/10 hover:bg-white hover:text-black' : 'border-slate-900 hover:bg-black hover:text-white'}`}>
                         LIKE {post.likes}
-                    </Button>
-                    <Button variant="outline" className="rounded-full px-8 py-6 gap-2 font-black italic tracking-widest">
-                        <LuMessageSquare />
-                        COMMENTS
-                    </Button>
+                    </button>
                 </div>
 
-                {/* 하단 푸터 (이전/다음글 유도) */}
-                <footer className="mt-20">
-                    <div className={`p-10 rounded-[40px] border flex flex-col items-center text-center gap-4
-                        ${darkMode ? 'bg-white/5 border-white/10' : 'bg-slate-100 border-slate-200'}`}>
-                        <span className="text-[10px] font-black opacity-40 uppercase tracking-[0.2em]">Next Thought</span>
-                        <h4 className="text-2xl font-black tracking-tighter hover:italic cursor-pointer transition-all">
-                            미니멀리즘이 프론트엔드 성능에 미치는 영향 ↗
+                {/* 댓글 컴포넌트 호출 */}
+                <CommentSection darkMode={darkMode} />
+
+                {/* 다음 콘텐츠 푸터 */}
+                <footer className="mt-32">
+                    <div className={`p-12 rounded-[40px] border flex flex-col items-center text-center gap-6 group cursor-pointer transition-all
+                        ${darkMode ? 'bg-white/5 border-white/10 hover:bg-white/10 shadow-none' : 'bg-slate-100 border-slate-200 hover:bg-white shadow-none'}`}>
+                        <span className="text-[10px] font-black opacity-30 uppercase tracking-[0.4em]">Next Thought</span>
+                        <h4 className="text-3xl font-black tracking-tighter group-hover:italic uppercase leading-tight">
+                            The Paradox of Minimalism in Frontend Dev →
                         </h4>
                     </div>
                 </footer>

@@ -54,6 +54,39 @@ export default function JoinPage() {
 
                     <CardContent className="grid gap-5 px-8 py-6">
                         {/* 이메일 입력 섹션 */}
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="confirm-password" className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">
+                                닉네임
+                            </Label>
+                            <Input
+                                id="confirm-password"
+                                type="text"
+                                placeholder="닉네임을 입력하세요"
+                                className={`h-12 rounded-xl border-none transition-all ${
+                                    darkMode
+                                        ? "bg-[#1c1c1c] focus-visible:ring-1 focus-visible:ring-white/20 text-white"
+                                        : "bg-slate-100 focus-visible:ring-1 focus-visible:ring-slate-300 text-slate-900"
+                                }`}
+                            />
+                        </div>
+
+                        <div className="grid gap-2">
+                            <Label htmlFor="confirm-password" className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">
+                                GitHub
+                            </Label>
+                            <Input
+                                id="confirm-password"
+                                type="url"
+                                placeholder="github.com(선택)"
+                                className={`h-12 rounded-xl border-none transition-all ${
+                                    darkMode
+                                        ? "bg-[#1c1c1c] focus-visible:ring-1 focus-visible:ring-white/20 text-white"
+                                        : "bg-slate-100 focus-visible:ring-1 focus-visible:ring-slate-300 text-slate-900"
+                                }`}
+                            />
+                        </div>
+
                         <div className="grid gap-2">
                             <Label htmlFor="email" className="text-[10px] font-black uppercase tracking-widest ml-1 opacity-70">
                                 이메일
