@@ -4,7 +4,7 @@ import React from 'react';
 import { useRouter, usePathname } from "next/navigation";
 import { IoPartlySunny } from "react-icons/io5";
 import { FaSearch } from "react-icons/fa";
-import { useTheme } from "../../context/darkmood"; // 컨텍스트 경로 확인 필요
+import { useTheme } from "../../app/context/darkmood"; // 컨텍스트 경로 확인 필요
 
 export default function WriteModeHeader() {
     const router = useRouter();
@@ -21,7 +21,7 @@ export default function WriteModeHeader() {
             {/* --- Left Section: Logo & Status --- */}
             <div className="flex items-center gap-6">
                 <h1
-                    className="text-sm font-black tracking-widest uppercase italic cursor-pointer"
+                    className="text-sm font-black tracking-widest uppercase cursor-pointer"
                     onClick={() => router.push('/')}
                 >
                     HK.WORLD

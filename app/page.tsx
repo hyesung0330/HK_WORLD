@@ -2,11 +2,8 @@
 
 import React from 'react';
 import { useRouter } from "next/navigation";
-import { IoPartlySunny } from "react-icons/io5";
-import { FaSearch } from "react-icons/fa";
-// 설정하신 경로에서 컨텍스트와 훅을 불러옵니다.
 import { useTheme } from "./context/darkmood";
-import MainHeader from "@/app/components/header/main_header";
+import MainHeader from "@/components/header/main_header";
 
 const communityPosts = [
     {
@@ -58,7 +55,7 @@ export default function CommunityPage() {
                 {/* --- 헤더 섹션 --- */}
                 <header className="mb-16">
                     <h2 className="text-6xl md:text-8xl font-black tracking-[calc(-0.05em)] leading-none mb-6 italic">
-                        EVERYONE'S<br/>THOUGHTS.
+                        EVERYONE'S<br/>THOUGHTS
                     </h2>
                     <p className={`max-w-md text-sm leading-relaxed font-medium ${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>
                         당신의 프로젝트를 알리고, 정보를 얻으며, <br/>

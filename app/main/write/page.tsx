@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { useRouter } from "next/navigation";
 import { useTheme } from "../../context/darkmood";
-import WriteModeHeader from "@/app/components/header/write_header";
+import WriteModeHeader from "@/components/header/write_header";
 
 export default function TrendyWritePage() {
     const router = useRouter();

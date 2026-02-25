@@ -3,8 +3,8 @@
 import React from 'react';
 import { useRouter, usePathname } from "next/navigation";
 import { IoPartlySunny } from "react-icons/io5";
-import { FaSearch } from "react-icons/fa";
-import { useTheme } from "../../context/darkmood"; // 절대경로 혹은 상대경로 확인
+import { useTheme } from "../../app/context/darkmood";
+import {SearchDialog} from "@/components/dialog/mainSearchDialog/page";
 
 export default function Header() {
     const router = useRouter();
@@ -20,7 +20,7 @@ export default function Header() {
 
             {/* --- Left: Logo --- */}
             <div className="flex items-center gap-8">
-                <h1 className="text-sm font-black tracking-widest uppercase italic cursor-pointer" onClick={() => router.push('/')}>
+                <h1 className="text-sm font-black tracking-widest uppercase cursor-pointer" onClick={() => router.push('/')}>
                     HK.WORLD
                 </h1>
                 {/* 글쓰기 페이지가 아닐 때만 메뉴 표시 */}
@@ -36,16 +36,7 @@ export default function Header() {
             {!isWritePage ? (
                 <div className="flex-1 max-w-md mx-8 hidden md:block">
                     <div className="relative group">
-                        <input
-                            type="text"
-                            placeholder="필요한 정보를 검색해보세요"
-                            className={`w-full py-2 px-10 text-[11px] font-bold rounded-full border transition-all outline-none
-                                ${darkMode
-                                ? 'bg-white/5 border-white/10 focus:border-white/30 text-white placeholder:text-gray-600'
-                                : 'bg-slate-100 border-transparent focus:bg-white focus:border-slate-300 text-slate-900'
-                            }`}
-                        />
-                        <span className="absolute left-4 top-1/2 -translate-y-1/2 text-xs opacity-40"><FaSearch/></span>
+                        <SearchDialog />
                     </div>
                 </div>
             ) : (
@@ -68,7 +59,6 @@ export default function Header() {
 
                 <div className="h-4 w-[1px] bg-current opacity-10 mx-1"></div>
 
-                {/* 글쓰기 페이지면 '발행하기', 아니면 '글쓰기' 버튼 표시 */}
                 {isWritePage ? (
                     <button className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-lg
                         ${darkMode ? 'bg-white text-black hover:bg-gray-200' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
@@ -76,7 +66,10 @@ export default function Header() {
                     </button>
                 ) : (
                     <>
-                        <button className={`text-[10px] font-black uppercase tracking-widest hover:opacity-60 transition ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                    <button onClick={()=> router.push('/main/auth/login')} className={`text-[10px] font-black tracking-widest hover:opacity-60 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
+                            로그인
+                        </button>
+                        <button onClick={()=> router.push('/main/auth/join')} className={`text-[10px] font-black tracking-widest hover:opacity-60  ${darkMode ? 'text-white' : 'text-slate-900'}`}>
                             회원가입
                         </button>
                         <button
