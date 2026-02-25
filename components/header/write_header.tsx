@@ -4,7 +4,8 @@ import React from 'react';
 import { useRouter, usePathname } from "next/navigation";
 import { IoPartlySunny } from "react-icons/io5";
 import { FaSearch } from "react-icons/fa";
-import { useTheme } from "../../app/context/darkmood"; // 컨텍스트 경로 확인 필요
+import { useTheme } from "@/app/context/darkmood";
+import ProfileSheet from "@/components/sheet/profileSheet/page";
 
 export default function WriteModeHeader() {
     const router = useRouter();
@@ -107,9 +108,11 @@ export default function WriteModeHeader() {
                     </>
                 )}
 
-                <div className={`w-8 h-8 rounded-full overflow-hidden border cursor-pointer transition-transform hover:scale-105
-                    ${darkMode ? 'border-white/10' : 'border-slate-200'}`}>
-                    <img src="https://ui-avatars.com/api/?name=HwangKing&background=0D8ABC&color=fff" alt="avatar" />
+                <div className="flex items-center justify-center">
+                    <div className={`w-10 h-10 rounded-full overflow-hidden border cursor-pointer transition-all hover:scale-105 active:scale-95 flex items-center justify-center
+                        ${darkMode ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50'}`}>
+                        <ProfileSheet />
+                    </div>
                 </div>
             </div>
         </nav>

@@ -2,7 +2,7 @@
 
 import React from "react";
 // 사용하시는 커스텀 컨텍스트 경로로 정확히 맞췄습니다.
-import { useTheme } from "../../../context/darkmood";
+import { useTheme } from "@/app/context/darkmood";
 import MainHeader from "@/components/header/main_header";
 import { Button } from "@/components/ui/button";
 import {

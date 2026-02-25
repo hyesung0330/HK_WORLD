@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { useRouter } from "next/navigation";
-import { useTheme } from "./context/darkmood";
+import { useTheme } from "@/app/context/darkmood";
 import MainHeader from "@/components/header/main_header";
 
 const communityPosts = [
