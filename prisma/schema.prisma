@@ -1,0 +1,188 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  // url      = env("DATABASE_URL")
+}
+
+// ===================================
+// User: 작가와 독자 (본질을 기록하는 사람)
+// ===================================
+model User {
+  id        Int     @id @default(autoincrement())
+  nickname  String  @unique
+  email     String  @unique
+  password  String? // 소셜 로그인 사용자를 위해 Optional로 변경
+  bio       String? @db.VarChar(200) // 짧은 작가 소개
+  githubUrl String? @map("github_url")
+  avatarUrl String? @map("avatar_url")
+
+  // 등급 체계 (필력이나 영향력)
+  reputation Int @default(0)
+  level      Int @default(1)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  accounts Account[] // 소셜 계정 연동 정보
+  posts    Post[]
+  series   Series[] // 시리즈 소유 권한
+  comments Comment[]
+  likes    Like[]
+  scraps   Scrap[] // 저장된 글
+
+  @@map("users")
+}
+
+// ===================================
+// Account: 소셜 로그인 연동 정보 (OAuth)
+// ===================================
+model Account {
+  id                Int    @id @default(autoincrement())
+  userId            Int    @map("user_id")
+  type              String // OAuth 타입 (예: "oauth")
+  provider          String // 서비스 제공자 (예: "google", "github", "kakao")
+  providerAccountId String @map("provider_account_id") // 제공자 측의 유저 고유 ID
+
+  refresh_token String? @db.Text
+  access_token  String? @db.Text
+  expires_at    Int?
+  token_type    String?
+  scope         String?
+  id_token      String? @db.Text
+  session_state String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@index([userId])
+  @@map("accounts")
+}
+
+// ===================================
+// Series: 글의 묶음 (근본 있는 연재물)
+// ===================================
+model Series {
+  id          Int     @id @default(autoincrement())
+  title       String
+  description String? @db.Text
+  slug        String  @unique // URL용 고유 주소
+
+  authorId Int  @map("author_id")
+  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  posts     Post[]
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@map("series")
+}
+
+// ===================================
+// Post: 텍스트 본문 (플랫폼의 핵심)
+// ===================================
+enum PostType {
+  PIECE // 단편/에세이
+  COLUMN // 전문 칼럼
+  TECHNICAL // 기술/정보
+}
+
+model Post {
+  id       Int      @id @default(autoincrement())
+  title    String
+  content  String   @db.Text
+  summary  String?  @db.VarChar(500) // 글 요약
+  postType PostType @default(PIECE) @map("post_type")
+  views    Int      @default(0)
+  readTime Int?     @map("read_time") // 예상 읽기 시간 (분)
+
+  // Author & Series
+  authorId Int  @map("author_id")
+  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  seriesId    Int?    @map("series_id")
+  series      Series? @relation(fields: [seriesId], references: [id], onDelete: SetNull)
+  seriesOrder Int?    @map("series_order") // 시리즈 내 순서
+
+  // Metadata
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  // Relations
+  tags     PostTag[]
+  comments Comment[]
+  likes    Like[]
+  scraps   Scrap[]
+
+  @@index([authorId])
+  @@index([seriesId])
+  @@map("posts")
+}
+
+// ===================================
+// Tag: 텍스트 분류 (N:M 관계)
+// ===================================
+model Tag {
+  id    Int       @id @default(autoincrement())
+  name  String    @unique
+  posts PostTag[]
+
+  @@map("tags")
+}
+
+model PostTag {
+  postId Int  @map("post_id")
+  tagId  Int  @map("tag_id")
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  tag    Tag  @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([postId, tagId])
+  @@map("post_tags")
+}
+
+// ===================================
+// Comment: 문장에 대한 반응
+// ===================================
+model Comment {
+  id        Int      @id @default(autoincrement())
+  content   String   @db.Text
+  createdAt DateTime @default(now()) @map("created_at")
+
+  authorId Int  @map("author_id")
+  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  postId Int  @map("post_id")
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  parentId Int?      @map("parent_id")
+  parent   Comment?  @relation("Replies", fields: [parentId], references: [id], onDelete: Cascade)
+  replies  Comment[] @relation("Replies")
+
+  @@map("comments")
+}
+
+// ===================================
+// Interaction: 좋아요 & 스크랩
+// ===================================
+model Like {
+  userId Int  @map("user_id")
+  postId Int  @map("post_id")
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@id([userId, postId])
+  @@map("likes")
+}
+
+model Scrap {
+  userId    Int      @map("user_id")
+  postId    Int      @map("post_id")
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@id([userId, postId])
+  @@map("scraps")
+}
