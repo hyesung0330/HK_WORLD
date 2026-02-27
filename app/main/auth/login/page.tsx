@@ -29,7 +29,7 @@ export default function LoginPage() {
             <MainHeader />
 
             {/* 메인 영역: 화면 중앙 배치 조정 (items-center, justify-center) */}
-            <main className="flex-1 flex flex-col items-center justify-center px-4 pb-24">
+            <div className="flex-1 flex flex-col items-center justify-center px-4 pb-24 pt-24">
                 <Card className={`w-full max-w-[400px] rounded-2xl shadow-2xl transition-all duration-500 border-none ${
                     darkMode
                         ? "bg-[#121212] text-white shadow-black/40"
@@ -132,7 +132,7 @@ export default function LoginPage() {
                         </Button>
                     </CardFooter>
                 </Card>
-            </main>
+            </div>
         </div>
     );
 }

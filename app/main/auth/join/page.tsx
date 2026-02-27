@@ -26,7 +26,7 @@ export default function JoinPage() {
         }`}>
             <MainHeader />
 
-            <main className="flex-1 flex flex-col items-center justify-center px-4 pb-24">
+            <div className="flex-1 flex flex-col items-center justify-center px-4 pt-24 pb-24">
                 <Card className={`w-full max-w-[400px] rounded-2xl shadow-2xl transition-all duration-500 border-none ${
                     darkMode
                         ? "bg-[#121212] text-white shadow-black/40"
@@ -153,7 +153,7 @@ export default function JoinPage() {
                         </p>
                     </CardFooter>
                 </Card>
-            </main>
+            </div>
         </div>
     );
 }
