@@ -170,8 +170,12 @@ model Comment {
   content   String   @db.Text
   createdAt DateTime @default(now()) @map("created_at")
 
-  authorId Int  @map("author_id")
-  author   User @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  authorId  Int?    @map("author_id")
+  author    User?   @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  
+  // 익명 댓글용 필드
+  isAnonymous Boolean @default(false) @map("is_anonymous")
+  nickname    String? // 익명일 때 사용되는 닉네임
 
   postId Int  @map("post_id")
   post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
@@ -187,12 +191,18 @@ model Comment {
 // Interaction: 좋아요 & 스크랩
 // ===================================
 model Like {
-  userId Int  @map("user_id")
+  id     Int  @id @default(autoincrement())
+  userId Int? @map("user_id")
   postId Int  @map("post_id")
-  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
-  post   Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  
+  // 익명 좋아요용 (쿠키/세션 ID 기반 등)
+  anonymousId String? @map("anonymous_id")
 
-  @@id([userId, postId])
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+  post Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, postId])
+  @@unique([anonymousId, postId])
   @@map("likes")
 }
 

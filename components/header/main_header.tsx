@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { useRouter, usePathname } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { IoPartlySunny } from "react-icons/io5";
 import { useTheme } from "@/app/context/darkmood";
 import {SearchDialog} from "@/components/dialog/mainSearchDialog/page";
@@ -12,10 +13,14 @@ import AuthDialog from "@/components/dialog/AuthDialog/page";
 export default function Header() {
     const router = useRouter();
     const pathname = usePathname();
+    const { data: session } = useSession();
     const { darkMode, toggleDarkMode } = useTheme();
 
     // 글쓰기 페이지인지 확인
     const isWritePage = pathname.includes('/write');
+
+    // 로그인 여부 확인
+    const isAuthenticated = !!session;
 
     return (
         <nav className={`fixed top-0 w-full flex items-center justify-between px-8 py-4 border-b z-50 transition-colors max-h-[88px]
@@ -68,20 +73,27 @@ export default function Header() {
                 <div className="h-4 w-[1px] bg-current opacity-10 mx-1"></div>
 
                 {isWritePage ? (
-                    <button className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-lg
+                    <button 
+                        onClick={() => {
+                            const publishButton = document.querySelector('button[data-publish-trigger="true"]') as HTMLButtonElement;
+                            if (publishButton) publishButton.click();
+                        }}
+                        className={`px-6 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-lg
                         ${darkMode ? 'bg-white text-black hover:bg-gray-200' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
                         발행하기
                     </button>
                 ) : (
                     <>
-                        <AuthDialog/>
-                        <button
-                            onClick={() => router.push('/main/write')}
-                            className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-lg
-                                ${darkMode ? 'bg-white text-black hover:bg-gray-200 shadow-white/5' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-900/10'}`}
-                        >
-                            글쓰기
-                        </button>
+                        {!isAuthenticated && <AuthDialog/>}
+                        {isAuthenticated && (
+                            <button
+                                onClick={() => router.push('/main/write')}
+                                className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-lg
+                                    ${darkMode ? 'bg-white text-black hover:bg-gray-200 shadow-white/5' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-900/10'}`}
+                            >
+                                글쓰기
+                            </button>
+                        )}
                     </>
                 )}
 

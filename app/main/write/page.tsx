@@ -32,7 +32,7 @@ export default function TrendyWritePage() {
         <div className={`min-h-screen transition-colors duration-500 font-sans 
             ${darkMode ? 'bg-[#0a0a0a] text-white' : 'bg-slate-50 text-slate-900'}`}>
 
-            <WriteModeHeader postData={{ title, content, mode }} />
+            <WriteModeHeader postData={{ title, content, mode, link, techStack, coverImage }} />
 
             <div className="flex pt-[65px] h-[calc(100vh-65px)]">
 

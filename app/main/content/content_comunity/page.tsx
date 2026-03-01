@@ -33,19 +33,36 @@ export default function CommunityFeedPage() {
     const { darkMode } = useTheme();
     const router = useRouter();
     const [mounted, setMounted] = useState(false);
+    const [posts, setPosts] = useState<any[]>([]);
+    const [loading, setLoading] = useState(true);
 
     // 페이지네이션
     const [currentPage, setCurrentPage] = useState(1);
     const postsPerPage = 12; // 4열 배수
-    const totalPages = Math.ceil(MOCK_POSTS.length / postsPerPage);
 
     useEffect(() => {
         setMounted(true);
+        fetchPosts();
     }, []);
+
+    const fetchPosts = async () => {
+        try {
+            const res = await fetch("/api/posts?type=TECHNICAL");
+            if (res.ok) {
+                const data = await res.json();
+                setPosts(data);
+            }
+        } catch (error) {
+            console.error("Fetch posts error:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     if (!mounted) return null;
 
-    const currentPosts = MOCK_POSTS.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
+    const totalPages = Math.ceil(posts.length / postsPerPage);
+    const currentPosts = posts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
 
     return (
         <div className={`min-h-screen transition-colors duration-500 font-sans
@@ -74,71 +91,77 @@ export default function CommunityFeedPage() {
                 </div>
 
                 {/* 피드 그리드 레이아웃: sm(640px) 이상 4열 고정 */}
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                    {currentPosts.map((post) => (
-                        <Card
-                            key={post.id}
-                            onClick={() => router.push(`/main/content/content_comunity/${post.id}`)}
-                            className={`group cursor-pointer border-none overflow-hidden transition-all duration-500 hover:-translate-y-2
-                                ${darkMode ? 'bg-[#121212] hover:bg-[#181818]' : 'bg-white shadow-xl shadow-slate-200/50'}`}
-                        >
-                            {/* 카드 이미지 영역 */}
-                            <div className="relative overflow-hidden">
-                                <AspectRatio ratio={16 / 10}>
-                                    <img
-                                        src={post.image}
-                                        alt={post.title}
-                                        className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
-                                    />
-                                </AspectRatio>
-                                <div className="absolute top-4 left-4">
-                                    <Badge className="bg-blue-600/90 backdrop-blur-md border-none font-black italic text-[10px]">
-                                        {post.category}
-                                    </Badge>
-                                </div>
-                            </div>
-
-                            <CardHeader className="p-5 pb-2">
-                                <div className="flex items-center gap-2 mb-3">
-                                    <Avatar className="w-5 h-5 border border-white/10">
-                                        <AvatarImage src={post.avatar} />
-                                        <AvatarFallback>HK</AvatarFallback>
-                                    </Avatar>
-                                    <span className="text-[10px] font-black italic opacity-40 uppercase tracking-tighter">
-                                        {post.author}
-                                    </span >
-                                </div>
-                                <h3 className="text-lg font-black leading-tight tracking-tighter group-hover:text-blue-500 transition-colors line-clamp-2">
-                                    {post.title}
-                                </h3>
-                            </CardHeader>
-
-                            <CardContent className="px-5 pb-4">
-                                <p className={`text-xs leading-relaxed line-clamp-2 font-medium ${darkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
-                                    {post.description}
-                                </p>
-                            </CardContent>
-
-                            <CardFooter className={`px-5 py-4 border-t flex items-center justify-between
-                                ${darkMode ? 'border-white/5' : 'border-slate-50'}`}>
-                                <div className="flex items-center gap-3 opacity-40">
-                                    <div className="flex items-center gap-1">
-                                        <LuHeart size={14} />
-                                        <span className="text-[10px] font-bold">{post.likes}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1">
-                                        <LuMessageSquare size={14} />
-                                        <span className="text-[10px] font-bold">{post.comments}</span>
+                {loading ? (
+                    <div className="text-center py-20 opacity-40 font-black uppercase tracking-widest">Loading Posts...</div>
+                ) : posts.length === 0 ? (
+                    <div className="text-center py-20 opacity-40 font-black uppercase tracking-widest">작성된 글이 없습니다.</div>
+                ) : (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {currentPosts.map((post) => (
+                            <Card
+                                key={post.id}
+                                onClick={() => router.push(`/main/content/content_comunity/${post.id}`)}
+                                className={`group cursor-pointer border-none overflow-hidden transition-all duration-500 hover:-translate-y-2
+                                    ${darkMode ? 'bg-[#121212] hover:bg-[#181818]' : 'bg-white shadow-xl shadow-slate-200/50'}`}
+                            >
+                                {/* 카드 이미지 영역 */}
+                                <div className="relative overflow-hidden">
+                                    <AspectRatio ratio={16 / 10}>
+                                        <img
+                                            src={post.image || `https://picsum.photos/seed/${post.id}/600/400`}
+                                            alt={post.title}
+                                            className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
+                                        />
+                                    </AspectRatio>
+                                    <div className="absolute top-4 left-4">
+                                        <Badge className="bg-blue-600/90 backdrop-blur-md border-none font-black italic text-[10px]">
+                                            {post.postType}
+                                        </Badge>
                                     </div>
                                 </div>
-                                <div className="flex items-center gap-1 opacity-20">
-                                    <LuEye size={14} />
-                                    <span className="text-[10px] font-bold">{post.views}</span>
-                                </div>
-                            </CardFooter>
-                        </Card>
-                    ))}
-                </div>
+
+                                <CardHeader className="p-5 pb-2">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <Avatar className="w-5 h-5 border border-white/10">
+                                            <AvatarImage src={post.author?.image} />
+                                            <AvatarFallback>HK</AvatarFallback>
+                                        </Avatar>
+                                        <span className="text-[10px] font-black italic opacity-40 uppercase tracking-tighter">
+                                            {post.author?.name || "익명"}
+                                        </span >
+                                    </div>
+                                    <h3 className="text-lg font-black leading-tight tracking-tighter group-hover:text-blue-500 transition-colors line-clamp-2">
+                                        {post.title}
+                                    </h3>
+                                </CardHeader>
+
+                                <CardContent className="px-5 pb-4">
+                                    <p className={`text-xs leading-relaxed line-clamp-2 font-medium ${darkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
+                                        {post.summary}
+                                    </p>
+                                </CardContent>
+
+                                <CardFooter className={`px-5 py-4 border-t flex items-center justify-between
+                                    ${darkMode ? 'border-white/5' : 'border-slate-50'}`}>
+                                    <div className="flex items-center gap-3 opacity-40">
+                                        <div className="flex items-center gap-1">
+                                            <LuHeart size={14} />
+                                            <span className="text-[10px] font-bold">{post.likes || 0}</span>
+                                        </div>
+                                        <div className="flex items-center gap-1">
+                                            <LuMessageSquare size={14} />
+                                            <span className="text-[10px] font-bold">{post._count?.comments || 0}</span>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-center gap-1 opacity-20">
+                                        <LuEye size={14} />
+                                        <span className="text-[10px] font-bold">{post.views || 0}</span>
+                                    </div>
+                                </CardFooter>
+                            </Card>
+                        ))}
+                    </div>
+                )}
 
                 {/* 페이지네이션 */}
                 <div className="mt-20">

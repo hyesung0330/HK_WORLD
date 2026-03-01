@@ -2,9 +2,7 @@ import NextAuth from "next-auth"
 import KakaoProvider from "next-auth/providers/kakao"
 import GoogleProvider from "next-auth/providers/google"
 import { PrismaAdapter } from "@auth/prisma-adapter"
-import { PrismaClient } from "@prisma/client"
-
-const prisma = new PrismaClient()
+import { prisma } from "@/lib/prisma"
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
     adapter: PrismaAdapter(prisma),
@@ -27,20 +25,41 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
         GoogleProvider({
             clientId: process.env.GOOGLE_CLIENT_ID,
             clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+            profile(profile) {
+                return {
+                    id: profile.sub,
+                    name: profile.name,
+                    email: profile.email,
+                    image: profile.picture,
+                    reputation: 0,
+                    level: 1,
+                }
+            },
         }),
     ],
+    session: {
+        strategy: "jwt",
+    },
     callbacks: {
-        async jwt({ token, user }) {
+        async jwt({ token, user, trigger, session }) {
             if (user) {
-                token.id = user.id
+                token.sub = user.id;
+                token.level = (user as any).level || 1;
+                token.github = (user as any).githubUrl || (user as any).github || null;
             }
-            return token
+            if (trigger === "update" && session) {
+                if (session.user?.name) token.name = session.user.name;
+                if (session.user?.github) token.github = session.user.github;
+            }
+            return token;
         },
         async session({ session, token }) {
-            if (session.user) {
-                session.user.id = token.id as string
+            if (session.user && token.sub) {
+                session.user.id = token.sub;
+                (session.user as any).level = token.level as number;
+                (session.user as any).github = token.github as string;
             }
-            return session
+            return session;
         },
     },
     secret: process.env.KAKAO_AUTH_SECRET,

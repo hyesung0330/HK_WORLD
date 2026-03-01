@@ -6,11 +6,24 @@ import { IoPartlySunny } from "react-icons/io5";
 import { FaSearch } from "react-icons/fa";
 import { useTheme } from "@/app/context/darkmood";
 import ProfileSheet from "@/components/sheet/profileSheet/page";
+import { useSession } from "next-auth/react";
 
-export default function WriteModeHeader() {
+type WriteModeHeaderProps = {
+    postData?: {
+        title: string;
+        content: string;
+        mode: "community" | "promote" | "note";
+        link?: string;
+        techStack?: string;
+        coverImage?: string | null;
+    };
+};
+
+export default function WriteModeHeader({ postData }: WriteModeHeaderProps) {
     const router = useRouter();
     const pathname = usePathname();
     const { darkMode, toggleDarkMode } = useTheme();
+    const { data: session } = useSession();
 
     // 현재 페이지가 글쓰기 페이지인지 확인
     const isWritePage = pathname.includes('/write');
@@ -21,12 +34,13 @@ export default function WriteModeHeader() {
 
             {/* --- Left Section: Logo & Status --- */}
             <div className="flex items-center gap-6">
-                <h1
-                    className="text-sm font-black tracking-widest uppercase cursor-pointer"
-                    onClick={() => router.push('/')}
-                >
-                    Textra
-                </h1>
+                <div className="cursor-pointer" onClick={() => router.push('/')}>
+                    <img
+                        src={darkMode ? "/image/Logo/MainLogo/Textra_Logo_v1_black2.png" : "/image/Logo/MainLogo/Textra_Logo_v1.png "}
+                        alt="Textra Logo"
+                        className={darkMode ? "w-18 h-14" : "w-18 h-15"}
+                    />
+                </div>
 
                 {isWritePage && (
                     <>
@@ -85,8 +99,42 @@ export default function WriteModeHeader() {
                         <button className="text-[11px] font-bold opacity-40 hover:opacity-100 transition uppercase tracking-widest">
                             미리보기
                         </button>
-                        <button className={`px-6 py-2 text-[11px] font-bold rounded-full transition-all uppercase tracking-widest
-                            ${darkMode ? 'bg-white text-black hover:bg-gray-200' : 'bg-slate-900 text-white hover:bg-slate-800'}`}>
+                        <button
+                            data-publish-trigger="true"
+                            onClick={async () => {
+                                if (!session) {
+                                    alert("로그인이 필요합니다.");
+                                    return;
+                                }
+                                if (!postData) {
+                                    alert("작성 중인 글 데이터가 없습니다.");
+                                    return;
+                                }
+                                const { title, content, mode, link, techStack, coverImage } = postData;
+                                if (!title?.trim() || !content?.trim()) {
+                                    alert("제목과 내용을 입력해주세요.");
+                                    return;
+                                }
+                                try {
+                                    const res = await fetch("/api/posts", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({ title, content, mode, link, techStack, coverImage }),
+                                    });
+                                    if (!res.ok) {
+                                        const err = await res.json().catch(() => ({}));
+                                        throw new Error(err.message || "게시글 작성에 실패했습니다.");
+                                    }
+                                    const data = await res.json();
+                                    // 발행 후 해당 글 상세 페이지로 이동하도록 구성 (임시로 홈으로 이동)
+                                    router.push("/");
+                                } catch (e: any) {
+                                    alert(e.message || "오류가 발생했습니다.");
+                                }
+                            }}
+                            className={`px-6 py-2 text-[11px] font-bold rounded-full transition-all uppercase tracking-widest
+                            ${darkMode ? 'bg-white text-black hover:bg-gray-200' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
+                        >
                             글 올리기
                         </button>
                     </>

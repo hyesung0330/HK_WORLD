@@ -59,7 +59,7 @@ function CommentSection({ darkMode }: { darkMode: boolean }) {
                         className="bg-transparent border-none focus-visible:ring-0 placeholder:text-[10px] placeholder:font-black placeholder:tracking-widest font-medium shadow-none"
                     />
                     <Button className="rounded-xl bg-blue-600 hover:bg-blue-700 font-black italic text-[10px] tracking-widest px-6 shadow-none text-white">
-                        POST
+                        댓글 올리기
                     </Button>
                 </div>
             </div>
