@@ -25,7 +25,7 @@ export default function WriteModeHeader() {
                     className="text-sm font-black tracking-widest uppercase cursor-pointer"
                     onClick={() => router.push('/')}
                 >
-                    HK.WRITE
+                    Textra
                 </h1>
 
                 {isWritePage && (

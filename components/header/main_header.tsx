@@ -6,6 +6,8 @@ import { IoPartlySunny } from "react-icons/io5";
 import { useTheme } from "@/app/context/darkmood";
 import {SearchDialog} from "@/components/dialog/mainSearchDialog/page";
 import ProfileSheet from "@/components/sheet/profileSheet/page";
+import LoginDialog from "@/components/dialog/AuthDialog/page";
+import AuthDialog from "@/components/dialog/AuthDialog/page";
 
 export default function Header() {
     const router = useRouter();
@@ -16,14 +18,18 @@ export default function Header() {
     const isWritePage = pathname.includes('/write');
 
     return (
-        <nav className={`fixed top-0 w-full flex items-center justify-between px-8 py-4 border-b z-50 transition-colors 
+        <nav className={`fixed top-0 w-full flex items-center justify-between px-8 py-4 border-b z-50 transition-colors max-h-[88px]
             ${darkMode ? 'bg-[#0a0a0a]/80 border-white/10' : 'bg-white/80 border-slate-200'} backdrop-blur-xl`}>
 
             {/* --- Left: Logo --- */}
             <div className="flex items-center gap-8">
-                <h1 className="text-sm font-black tracking-widest uppercase cursor-pointer" onClick={() => router.push('/')}>
-                    HK.WRITE
-                </h1>
+                <div className="cursor-pointer" onClick={() => router.push('/')}>
+                    <img
+                        src={darkMode ? "/image/Logo/MainLogo/Textra_Logo_v1_black2.png" : "/image/Logo/MainLogo/Textra_Logo_v1.png "}
+                        alt="Textra Logo"
+                        className={darkMode ? "w-18 h-14" : "w-18 h-15"}
+                    />
+                </div>
                 {/* 글쓰기 페이지가 아닐 때만 메뉴 표시 */}
                 {!isWritePage && (
                     <div className="hidden lg:flex gap-6 text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
@@ -68,12 +74,7 @@ export default function Header() {
                     </button>
                 ) : (
                     <>
-                    <button onClick={()=> router.push('/main/auth/login')} className={`text-[10px] font-black tracking-widest hover:opacity-60 ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                            로그인
-                        </button>
-                        <button onClick={()=> router.push('/main/auth/join')} className={`text-[10px] font-black tracking-widest hover:opacity-60  ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                            회원가입
-                        </button>
+                        <AuthDialog/>
                         <button
                             onClick={() => router.push('/main/write')}
                             className={`px-5 py-2 rounded-full text-[10px] font-black uppercase tracking-widest transition-all shadow-lg

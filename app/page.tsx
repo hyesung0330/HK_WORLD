@@ -1,7 +1,6 @@
 "use client";
 
 import React from 'react';
-import { useRouter } from "next/navigation";
 import { useTheme } from "@/app/context/darkmood";
 import MainHeader from "@/components/header/main_header";
 
@@ -39,10 +38,6 @@ const communityPosts = [
 ];
 
 export default function CommunityPage() {
-    const router = useRouter();
-
-    // 컨텍스트에서 상태와 함수를 가져옵니다.
-    // 이름이 다를 수 있으니 context/darkmode.tsx의 리턴값을 확인하세요.
     const { darkMode, toggleDarkMode } = useTheme();
 
     return (
