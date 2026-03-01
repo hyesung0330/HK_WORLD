@@ -70,29 +70,21 @@ export default function CommunityFeedPage() {
 
             <MainHeader />
 
-            <main className="max-w-[1400px] mx-auto px-6 pt-32 pb-20">
+            <main className="max-w-[1400px] mx-auto px-4 md:px-6 pt-24 md:pt-32 pb-20">
                 {/* 헤더 섹션 */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-16">
+                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 md:mb-16">
                     <div>
-                        <h2 className="text-7xl font-black tracking-tighter uppercase leading-none mb-4">
-                            community
+                        <h2 className="text-5xl md:text-7xl font-black tracking-tighter uppercase leading-none mb-4">
+                            Column
                         </h2>
                         <p className={`text-sm font-bold tracking-tight ${darkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
                             당신의 이야기를 들려주세요
                         </p>
                     </div>
-                    <Button
-                        onClick={() => router.push('/main/write')}
-                        className="rounded-full bg-blue-600 hover:bg-blue-700 text-white font-black px-8 py-7 gap-2 shadow-xl shadow-blue-500/20 text-sm italic"
-                    >
-                        <LuPencilLine size={20} />
-                        나의 이야기 쓰기
-                    </Button>
                 </div>
 
-                {/* 피드 그리드 레이아웃: sm(640px) 이상 4열 고정 */}
                 {loading ? (
-                    <div className="text-center py-20 opacity-40 font-black uppercase tracking-widest">Loading Posts...</div>
+                    <div className="text-center py-20 opacity-40 font-black uppercase tracking-widest">컬럼을 불러오고 있어요.</div>
                 ) : posts.length === 0 ? (
                     <div className="text-center py-20 opacity-40 font-black uppercase tracking-widest">작성된 글이 없습니다.</div>
                 ) : (
@@ -114,7 +106,7 @@ export default function CommunityFeedPage() {
                                         />
                                     </AspectRatio>
                                     <div className="absolute top-4 left-4">
-                                        <Badge className="bg-blue-600/90 backdrop-blur-md border-none font-black italic text-[10px]">
+                                        <Badge className="bg-blue-600/90 backdrop-blur-md border-none font-black  text-[10px]">
                                             {post.postType}
                                         </Badge>
                                     </div>
@@ -126,7 +118,7 @@ export default function CommunityFeedPage() {
                                             <AvatarImage src={post.author?.image} />
                                             <AvatarFallback>HK</AvatarFallback>
                                         </Avatar>
-                                        <span className="text-[10px] font-black italic opacity-40 uppercase tracking-tighter">
+                                        <span className="text-[10px] font-black  opacity-40 uppercase tracking-tighter">
                                             {post.author?.name || "익명"}
                                         </span >
                                     </div>
@@ -180,7 +172,7 @@ export default function CommunityFeedPage() {
                                         isActive={currentPage === p}
                                         onClick={() => setCurrentPage(p)}
                                         className={`rounded-full w-10 h-10 font-black cursor-pointer border-none
-                                            ${currentPage === p ? 'bg-blue-600 text-white' : 'hover:bg-white/10'}`}
+                                            ${currentPage === p ? 'bg-gray-300 text-white' : 'hover:bg-gray-600'}`}
                                     >
                                         {p}
                                     </PaginationLink>

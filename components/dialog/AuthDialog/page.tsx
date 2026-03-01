@@ -33,14 +33,14 @@ export default function AuthDialog() {
             <DialogTrigger asChild>
                 <Button variant="ghost">시작하기</Button>
             </DialogTrigger>
-            <DialogContent className={`sm:max-w-[420px] p-0 border-none overflow-hidden ${darkMode ? "bg-[#0a0a0a]" : "bg-slate-50"}`}>
+            <DialogContent className={`w-[95vw] sm:max-w-[420px] p-0 border-none overflow-hidden rounded-3xl ${darkMode ? "bg-[#0a0a0a]" : "bg-slate-50"}`}>
 
                 <Card className={`w-full border-none shadow-none transition-all duration-500 ${
                     darkMode ? "bg-[#121212] text-white" : "bg-white text-slate-900"
                 }`}>
-                    <CardContent className="grid gap-5 px-8 py-2">
-                        <div className="flex items-center justify-center py-2">
-                            <CardTitle className="text-2xl font-black tracking-tight whitespace-nowrap">
+                    <CardContent className="grid gap-5 px-6 md:px-8 py-2">
+                        <div className="flex items-center justify-center py-2 text-center">
+                            <CardTitle className="text-xl md:text-2xl font-black tracking-tight break-keep">
                                 {isLoginView ? "Textra 로그인" : "Textra에 오신것을 환영합니다."}
                             </CardTitle>
                         </div>
@@ -82,7 +82,7 @@ export default function AuthDialog() {
                         )}
                     </CardContent>
 
-                    <CardFooter className="flex flex-col gap-3 px-8 pb-10">
+                    <CardFooter className="flex flex-col gap-3 px-6 md:px-8 pb-10">
                         {/* SNS 구분선 (로그인 시 또는 회원가입 폼이 닫혀있을 때 표시) */}
                         {(!showEmailForm || isLoginView) && (
                             <div className="relative w-full my-2">

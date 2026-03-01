@@ -115,7 +115,7 @@ export default function ColumnsPage() {
                                     <TableCell className="font-bold tracking-tight text-base py-5">
                                         {post.title}
                                     </TableCell>
-                                    <TableCell className="text-center text-xs font-black italic opacity-60 tracking-tighter">
+                                    <TableCell className="text-center text-xs font-black  opacity-60 tracking-tighter">
                                         {post.author}
                                     </TableCell>
                                     <TableCell className="text-center text-xs font-medium opacity-40">

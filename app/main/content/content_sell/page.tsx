@@ -61,7 +61,7 @@ export default function PromotePage() {
             <main className="max-w-7xl mx-auto px-6 pt-32 pb-20">
                 {/* 상단 홍보 문구 */}
                 <header className="mb-20 space-y-4">
-                    <div className="flex items-center gap-2 text-blue-500 font-black italic text-sm tracking-widest uppercase">
+                    <div className="flex items-center gap-2 text-blue-500 font-black  text-sm tracking-widest uppercase">
                         <LuSparkles /> <span>Available for new projects</span>
                     </div>
                     <h2 className="text-6xl md:text-8xl font-black tracking-tighter leading-none uppercase">
@@ -95,7 +95,7 @@ export default function PromotePage() {
                             {/* 컨텐츠 오버레이 */}
                             <div className="absolute inset-0 p-8 flex flex-col justify-between z-10">
                                 <div className="flex justify-between items-start">
-                                    <Badge className="bg-white/10 backdrop-blur-md text-white border-none font-black italic text-[10px]">
+                                    <Badge className="bg-white/10 backdrop-blur-md text-white border-none font-black  text-[10px]">
                                         {item.tag}
                                     </Badge>
                                     <div className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
@@ -104,7 +104,7 @@ export default function PromotePage() {
                                 </div>
 
                                 <div>
-                                    <h3 className={`font-black tracking-tighter leading-tight italic uppercase group-hover:text-blue-500 transition-colors
+                                    <h3 className={`font-black tracking-tighter leading-tight  uppercase group-hover:text-blue-500 transition-colors
                                         ${item.size === 'large' ? 'text-5xl mb-4' : 'text-2xl mb-2'}`}>
                                         {item.title}
                                     </h3>

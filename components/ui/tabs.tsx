@@ -64,11 +64,24 @@ function TabsTrigger({
     <TabsPrimitive.Trigger
       data-slot="tabs-trigger"
       className={cn(
-        "focus-visible:border-ring focus-visible:ring-ring/50 focus-visible:outline-ring text-foreground/60 hover:text-foreground dark:text-muted-foreground dark:hover:text-foreground relative inline-flex h-[calc(100%-1px)] flex-1 items-center justify-center gap-1.5 rounded-md border border-transparent px-2 py-1 text-sm font-medium whitespace-nowrap transition-all group-data-[orientation=vertical]/tabs:w-full group-data-[orientation=vertical]/tabs:justify-start focus-visible:ring-[3px] focus-visible:outline-1 disabled:pointer-events-none disabled:opacity-50 group-data-[variant=default]/tabs-list:data-[state=active]:shadow-sm group-data-[variant=line]/tabs-list:data-[state=active]:shadow-none [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
-        "group-data-[variant=line]/tabs-list:bg-transparent group-data-[variant=line]/tabs-list:data-[state=active]:bg-transparent dark:group-data-[variant=line]/tabs-list:data-[state=active]:border-transparent dark:group-data-[variant=line]/tabs-list:data-[state=active]:bg-transparent",
-        "data-[state=active]:bg-background dark:data-[state=active]:text-foreground dark:data-[state=active]:border-input dark:data-[state=active]:bg-input/30 data-[state=active]:text-foreground",
-        "after:bg-foreground after:absolute after:opacity-0 after:transition-opacity group-data-[orientation=horizontal]/tabs:after:inset-x-0 group-data-[orientation=horizontal]/tabs:after:bottom-[-5px] group-data-[orientation=horizontal]/tabs:after:h-0.5 group-data-[orientation=vertical]/tabs:after:inset-y-0 group-data-[orientation=vertical]/tabs:after:-right-1 group-data-[orientation=vertical]/tabs:after:w-0.5 group-data-[variant=line]/tabs-list:data-[state=active]:after:opacity-100",
-        className
+          // 1. 기본 레이아웃 및 폰트 설정 (배경/보더 제거)
+          "relative inline-flex h-full items-center justify-center gap-1.5 px-4 py-2 text-sm font-medium whitespace-nowrap transition-all",
+          "bg-transparent border-none shadow-none outline-none", // 배경, 선, 그림자 완전 제거
+
+          // 2. 비활성 상태 (연한 회색)
+          "text-foreground/50 hover:text-foreground",
+
+          // 3. 활성 상태 (글자색 강조 및 배경 유지)
+          "data-[state=active]:text-foreground data-[state=active]:bg-transparent data-[state=active]:shadow-none",
+          "dark:data-[state=active]:text-white",
+
+          // 4. 하단 강조선 (Underline) - 이미지의 부자연스러운 박스 대신 일체감 있는 선만 남김
+          "after:absolute after:bottom-[-1px] after:inset-x-0 after:h-[2px] after:bg-foreground after:opacity-0 after:transition-opacity",
+          "data-[state=active]:after:opacity-100",
+
+          // 5. 기타 유틸리티
+          "disabled:pointer-events-none disabled:opacity-50 [&_svg]:shrink-0",
+          className
       )}
       {...props}
     />

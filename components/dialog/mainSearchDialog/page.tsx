@@ -8,41 +8,75 @@ import {
     DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import {Input} from "@/components/ui/input";
-import {Search} from "lucide-react";
-import {FaSearch} from "react-icons/fa";
-import {useTheme} from "@/app/context/darkmood";
-
-interface SearchDialogProps {
-    isOpen: boolean;
-    onOpenChange: (open: boolean) => void;
-    onSearch: (query: string) => void;
-    placeholder?: string;
-}
+import { useRouter } from "next/navigation";
+import {Search, Loader2} from "lucide-react";
+import { useTheme } from "@/app/context/darkmood";
+import { FaSearch } from "react-icons/fa";
 
 export function SearchDialog({
-                                 isOpen,
-                                 onOpenChange,
-                                 onSearch,
                                  placeholder = "검색어를 입력하세요..."
-                             }: SearchDialogProps) {
+                             }: { placeholder?: string }) {
+    const [isOpen, setIsOpen] = useState(false);
     const [query, setQuery] = useState("");
+    const [results, setResults] = useState<any[]>([]);
+    const [loading, setLoading] = useState(false);
+    const router = useRouter();
 
     useEffect(() => {
-        if (!isOpen) setQuery("");
+        if (!isOpen) {
+            setQuery("");
+            setResults([]);
+        }
     }, [isOpen]);
 
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(() => {
+            if (query.trim()) {
+                fetchResults();
+            } else {
+                setResults([]);
+            }
+        }, 300);
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [query]);
+
+    const fetchResults = async () => {
+        setLoading(true);
+        try {
+            const res = await fetch(`/api/posts?search=${encodeURIComponent(query)}`);
+            if (res.ok) {
+                const data = await res.json();
+                setResults(data.slice(0, 5)); // 상위 5개만 표시
+            }
+        } catch (error) {
+            console.error("Search error:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
+
     const handleKeyDown = (e: React.KeyboardEvent) => {
-        if (e.key === 'Enter') {
-            onSearch(query);
-            // 검색 후 닫고 싶다면 여기서 onOpenChange(false) 호출
+        if (e.key === 'Enter' && query.trim()) {
+            setIsOpen(false);
+            router.push(`/main/search?q=${encodeURIComponent(query)}`);
+        }
+    };
+
+    const getPostDetailPath = (post: any) => {
+        switch (post.postType) {
+            case "TECHNICAL": return `/main/content/content_comunity/${post.id}`;
+            case "COLUMN": return `/main/content/content_c/${post.id}`;
+            case "PIECE": return `/main/content/content_sell/${post.id}`;
+            default: return `/main/content/content_comunity/${post.id}`;
         }
     };
 
     const {darkMode} = useTheme();
 
     return (
-        <Dialog open={isOpen} onOpenChange={onOpenChange}>
-            <DialogTrigger>
+        <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTrigger asChild>
                 <div className="flex items-center justify-end flex-1 w-full min-w-[300px] lg:min-w-[500px] ml-auto">
                     {/* 1. 모바일: 아이콘만 노출 (md 미만) */}
                     <button
@@ -71,31 +105,77 @@ export function SearchDialog({
                     </div>
                 </div>
             </DialogTrigger>
-            <DialogContent className="sm:max-w-[525px] top-[20%] translate-y-0">
-                <DialogHeader>
-                    <DialogTitle className="flex items-center gap-2">
+            <DialogContent className="w-[95vw] sm:max-w-[525px] top-[15%] md:top-[20%] translate-y-0 rounded-3xl p-4 md:p-6">
+                <DialogHeader className="p-0 mb-4">
+                    <DialogTitle className="flex items-center gap-2 text-sm md:text-base">
                         <Search className="w-4 h-4 text-muted-foreground"/>
                         <span>Search</span>
                     </DialogTitle>
                 </DialogHeader>
 
-                <div className="py-4">
-                    <Input
-                        value={query}
-                        onChange={(e) => setQuery(e.target.value)}
-                        onKeyDown={handleKeyDown}
-                        placeholder={placeholder}
-                        className="text-lg py-6 shadow-sm focus-visible:ring-primary"
-                        autoFocus
-                    />
-                </div>
-
-                {/* 여기에 실시간 검색 결과 리스트를 추가할 수 있습니다 */}
-                {query && (
-                    <div className="text-sm text-muted-foreground px-1">
-                        "{query}"에 대한 검색 결과
+                <div className="space-y-4">
+                    <div className="relative">
+                        <Input
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
+                            onKeyDown={handleKeyDown}
+                            placeholder={placeholder}
+                            className={`text-base md:text-lg py-5 md:py-6 shadow-sm focus-visible:ring-primary pr-12 rounded-2xl ${darkMode ? 'bg-white/5 border-white/10' : 'bg-slate-50'}`}
+                            autoFocus
+                        />
+                        {loading && (
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-40">
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            </div>
+                        )}
                     </div>
-                )}
+
+                    {/* 실시간 검색 결과 리스트 */}
+                    <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar">
+                        {query.trim() !== "" && !loading && results.length === 0 && (
+                            <div className="py-10 text-center opacity-40 font-bold uppercase tracking-widest text-xs">
+                                검색 결과가 없습니다
+                            </div>
+                        )}
+
+                        {results.map((post) => (
+                            <div
+                                key={post.id}
+                                onClick={() => {
+                                    setIsOpen(false);
+                                    router.push(getPostDetailPath(post));
+                                }}
+                                className={`p-4 rounded-2xl cursor-pointer transition-all border flex flex-col gap-1
+                                    ${darkMode ? 'bg-white/5 border-white/5 hover:bg-white/10 hover:border-white/20' : 'bg-slate-50 border-transparent hover:bg-white hover:border-slate-200 shadow-sm hover:shadow-md'}`}
+                            >
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span className={`text-[8px] font-black px-1.5 py-0.5 rounded-[4px] tracking-tighter uppercase
+                                        ${darkMode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                                        {post.postType}
+                                    </span>
+                                    <span className="text-[10px] font-bold opacity-40 uppercase tracking-tight">
+                                        {post.author?.name || "익명"}
+                                    </span>
+                                </div>
+                                <h4 className="text-sm font-bold line-clamp-1">{post.title}</h4>
+                                <p className="text-[11px] opacity-40 line-clamp-1 font-medium">{post.summary}</p>
+                            </div>
+                        ))}
+
+                        {query.trim() !== "" && results.length > 0 && (
+                            <button
+                                onClick={() => {
+                                    setIsOpen(false);
+                                    router.push(`/main/search?q=${encodeURIComponent(query)}`);
+                                }}
+                                className={`w-full py-3 text-[10px] font-black uppercase tracking-widest border-t mt-2 transition-opacity hover:opacity-100 opacity-60
+                                    ${darkMode ? 'border-white/5' : 'border-slate-100'}`}
+                            >
+                                전체 결과 보기 ({query})
+                            </button>
+                        )}
+                    </div>
+                </div>
             </DialogContent>
         </Dialog>
     );

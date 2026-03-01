@@ -25,6 +25,11 @@ export async function GET(
                         level: true,
                     }
                 },
+                tags: {
+                    include: {
+                        tag: true
+                    }
+                },
                 _count: {
                     select: {
                         likes: true,

@@ -4,289 +4,201 @@ import React, { useState, useEffect } from "react";
 import { useTheme } from "@/app/context/darkmood";
 import { useSession, signOut } from "next-auth/react";
 import AuthDialog from "@/components/dialog/AuthDialog/page";
-
-import {
-    Sheet,
-    SheetContent,
-    SheetHeader,
-    SheetTitle,
-    SheetDescription,
-    SheetTrigger,
-} from "@/components/ui/sheet";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+// SheetClose 추가
+import { Sheet, SheetContent, SheetClose, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { LuTrophy, LuExternalLink, LuLogOut, LuUser, LuCheck } from "react-icons/lu";
+// LuX 아이콘 추가
+import { LuLogOut, LuUser, LuCheck, LuArrowRight, LuX } from "react-icons/lu";
 import { FaRegEdit } from "react-icons/fa";
 
 export default function ProfileSheet() {
     const { darkMode } = useTheme();
     const { data: session, update } = useSession();
     const [mounted, setMounted] = useState(false);
-
-    // 편집 모드 상태 관리
     const [isEditing, setIsEditing] = useState(false);
-    const [formData, setFormData] = useState({
-        nickname: "",
-        github: ""
-    });
+    const [formData, setFormData] = useState({ nickname: "", github: "" });
     const [userPosts, setUserPosts] = useState<any[]>([]);
-    const [loadingPosts, setLoadingPosts] = useState(false);
-
-    // 랜덤 닉네임 생성 함수
-    const generateRandomNickname = () => {
-        const adjectives = ["말랑말랑한", "바삭바삭한", "쫀득쫀득한", "달콤한", "짭짤한", "촉촉한", "고소한", "탱글탱글한", "폭신폭신한"];
-        const foods = ["초콜릿", "마시멜로", "마카롱", "푸딩", "젤리", "탕후루", "치즈케이크", "쿠키", "도넛", "휘낭시에"];
-
-        const randomAdj = adjectives[Math.floor(Math.random() * adjectives.length)];
-        const randomFood = foods[Math.floor(Math.random() * foods.length)];
-
-        return `${randomAdj} ${randomFood}`;
-    };
 
     useEffect(() => {
         setMounted(true);
-        if (session?.user && !isEditing) {
-            // 이름이 없는 경우 랜덤 닉네임 생성, 있는 경우 기존 이름 사용
-            const initialNickname = session.user.name || generateRandomNickname();
-
+        if (session?.user) {
             setFormData({
-                nickname: initialNickname,
+                nickname: session.user.name || "",
                 github: (session.user as any).github || ""
             });
-
-            // 이름이 아예 없던 신규 유저라면 즉시 편집 모드 활성화
-            if (!session.user.name) {
-                setIsEditing(true);
-            }
-
-            // 사용자 포스트 가져오기
             fetchUserPosts((session.user as any).id);
         }
-    }, [session]); // isEditing 의존성을 제거하여 수정 중 세션 체크로 인한 초기화 방지
+    }, [session]);
 
     const fetchUserPosts = async (userId: string) => {
         if (!userId) return;
-        setLoadingPosts(true);
         try {
             const res = await fetch(`/api/user/${userId}/posts`);
             if (res.ok) {
                 const data = await res.json();
-                setUserPosts(data);
+                setUserPosts(data.slice(0, 3));
             }
-        } catch (error) {
-            console.error("Fetch posts error:", error);
-        } finally {
-            setLoadingPosts(false);
-        }
+        } catch (error) { console.error(error); }
     };
 
     if (!mounted) return null;
 
     const handleSave = async () => {
         if (!session?.user) return;
+        const userId = (session.user as any).id;
+        const response = await fetch(`/api/user/${userId}/edit`, {
+            method: "PATCH",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ nickname: formData.nickname, github: formData.github }),
+        });
 
-        try {
-            const userId = (session.user as any).id;
-            const response = await fetch(`/api/user/${userId}/edit`, {
-                method: "PATCH",
-                headers: {
-                    "Content-Type": "application/json",
-                },
-                body: JSON.stringify({
-                    nickname: formData.nickname,
-                    github: formData.github,
-                }),
-            });
-
-            if (response.ok) {
-                // 세션 데이터 클라이언트 동기화
-                await update({
-                    ...session,
-                    user: {
-                        ...session.user,
-                        name: formData.nickname,
-                        github: formData.github
-                    }
-                });
-
-                setIsEditing(false);
-            } else {
-                const error = await response.json();
-                alert(error.message || "업데이트 실패");
-            }
-        } catch (error) {
-            console.error("Save error:", error);
-            alert("서버 오류가 발생했습니다.");
+        if (response.ok) {
+            await update({ ...session, user: { ...session.user, name: formData.nickname, github: formData.github } });
+            setIsEditing(false);
         }
     };
-
-    const user = session?.user ? {
-        nickname: session.user.name || formData.nickname || "닉네임을 설정해주세요",
-        email: session.user.email || "No email",
-        level: (session.user as any).level || 1,
-        levelTitle: (session.user as any).level >= 99 ? "MASTER" : "MEMBER",
-        github: (session.user as any).github || "github.com/your-id",
-        avatar: session.user.image || ""
-    } : null;
 
     return (
         <Sheet>
             <SheetTrigger asChild>
-                <Button variant="ghost" size="icon" className="rounded-full">
-                    <LuUser className="w-8 h-8" />
+                <Button variant="ghost" size="icon" className="rounded-full hover:bg-transparent transition-transform active:scale-95">
+                    <LuUser className="w-7 h-7 opacity-80" />
                 </Button>
             </SheetTrigger>
 
             <SheetContent
                 side="right"
-                className={`w-full sm:max-w-md p-0 border-l transition-colors duration-500 overflow-y-auto
-                ${darkMode ? 'bg-[#0a0a0a] border-white/10 text-white' : 'bg-slate-50 border-slate-200 text-slate-900'}`}
+                className={`w-full sm:max-w-md p-0 border-none transition-all duration-500 
+                ${darkMode ? 'bg-[#080808] text-white' : 'bg-white text-slate-900'}`}
             >
-                {user ? (
-                    <div className="p-8 space-y-10">
-                        <SheetHeader className="text-left">
-                            <div className="flex items-center justify-between mb-6">
-                                <Badge className="bg-blue-600 font-black uppercase text-[10px]">Active Now</Badge>
-                                <div className="flex gap-2">
-                                    <Button
-                                        variant="ghost"
-                                        size="icon"
-                                        className="h-8 w-8 rounded-full"
-                                        onClick={() => {
-                                            if (isEditing) {
-                                                handleSave();
-                                            } else {
-                                                setIsEditing(true);
-                                            }
-                                        }}
+                {session?.user ? (
+                    <div className="flex flex-col h-full p-8 md:p-12">
+                        {/* 1. 상단 컨트롤: 닫기 아이콘 추가 */}
+                        <div className="flex justify-between items-center mb-16">
+                            {/* 왼쪽 그룹: 타이틀 + 수정/저장 + 로그아웃 */}
+                            <div className="flex items-center gap-6">
+        <span className="text-[10px] font-black tracking-[0.3em] uppercase opacity-30">
+            프로필 설정
+        </span>
+
+                                <div className="flex items-center gap-4 border-l pl-6 border-white/10">
+                                    {/* 수정/저장 아이콘 */}
+                                    <button
+                                        onClick={() => isEditing ? handleSave() : setIsEditing(true)}
+                                        className="hover:text-indigo-500 transition-colors opacity-60 hover:opacity-100"
                                     >
-                                        {isEditing ? <LuCheck className="w-4 h-4 text-green-500" /> :
-                                            <FaRegEdit className="w-4 h-4 hover:opacity-100" />}
-                                    </Button>
-                                    <Button variant="ghost" size="icon" className="h-8 w-8 rounded-full text-red-500" onClick={() => signOut()}>
-                                        <LuLogOut className="w-4 h-4" />
-                                    </Button>
+                                        {isEditing ? <LuCheck size={20} className="text-green-500" /> : <FaRegEdit size={18} />}
+                                    </button>
+
+                                    {/* 로그아웃 아이콘 */}
+                                    <button
+                                        onClick={() => signOut()}
+                                        className="hover:text-red-500 transition-colors opacity-60 hover:opacity-100"
+                                    >
+                                        <LuLogOut size={18} />
+                                    </button>
                                 </div>
                             </div>
 
-                            <Avatar className="w-20 h-20 border-2 border-gray-400 mb-4">
-                                <AvatarImage src={user.avatar} />
-                                <AvatarFallback className="bg-blue-500 text-white font-black italic">
-                                    {(formData.nickname || "TX").slice(0, 2).toUpperCase()}
-                                </AvatarFallback>
-                            </Avatar>
+                            {/* 오른쪽 그룹: 오직 닫기 버튼만 */}
+                            <div className="flex items-center">
+                                {isEditing ? (
+                                    <button
+                                        onClick={() => setIsEditing(false)}
+                                        className="hover:rotate-90 transition-transform duration-300 opacity-40 hover:opacity-100"
+                                    >
+                                        <LuX size={22} />
+                                    </button>
+                                ) : (
+                                    <SheetClose asChild>
+                                        <button className="hover:rotate-90 transition-transform duration-300 opacity-40 hover:opacity-100">
+                                            <LuX size={22} />
+                                        </button>
+                                    </SheetClose>
+                                )}
+                            </div>
+                        </div>
 
-                            {isEditing ? (
-                                <div className="space-y-2">
-                                    <Input
-                                        value={formData.nickname}
-                                        onChange={(e) => setFormData({...formData, nickname: e.target.value})}
-                                        placeholder="닉네임을 적어주세요"
-                                        className={`text-2xl font-black uppercase h-12 ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white border-slate-200'}`}
-                                    />
-                                </div>
-                            ) : (
-                                <SheetTitle className={`text-4xl font-black tracking-tighter uppercase leading-none ${darkMode ? 'text-white' : 'text-slate-900'}`}>
-                                    {user.nickname}
-                                </SheetTitle>
-                            )}
-                            <SheetDescription className="text-xs font-medium opacity-50">
-                                {isEditing ? "닉네임을 수정해보세요" : "TEXTRA 멤버"}
-                            </SheetDescription>
-                        </SheetHeader>
+                        {/* 2. 프로필 정보 */}
+                        {/* 2. 프로필 정보 영역 */}
+                        <div className="space-y-10 mb-16">
+                            {/* 상단: 이미지 + 기본 텍스트 정보 (가로 배치) */}
+                            <div className="flex items-center gap-8">
+                                <Avatar className="w-24 h-24 rounded-full border-none overflow-hidden shadow-2xl shrink-0">
+                                    <AvatarImage src={session.user.image || ""} className="object-cover" />
+                                    <AvatarFallback className="bg-indigo-600 text-white font-black  text-2xl">
+                                        {formData.nickname.slice(0, 1).toUpperCase()}
+                                    </AvatarFallback>
+                                </Avatar>
 
-                        <div className="grid grid-cols-1 gap-3">
-                            <Card className="bg-blue-600 border-none shadow-lg text-white overflow-hidden relative">
-                                <div className="absolute -right-2 -bottom-2 opacity-10">
-                                    <LuTrophy size={80} />
-                                </div>
-                                <CardContent className="p-3 flex items-end justify-between">
-                                    <div>
-                                        <p className="text-[11px] font-black tracking-[0.2em] opacity-70 mb-1">Textra Level</p>
-                                        <div className="text-2xl font-black leading-none">LV.{user.level}</div>
-                                    </div>
-                                    <span className="text-[10px] font-black uppercase bg-white/20 px-2 py-0.5 rounded">
-                                        {user.levelTitle}
-                                    </span>
-                                </CardContent>
-                            </Card>
-
-                            <Card className={`border-none shadow-sm ${darkMode ? 'bg-white/5 text-white' : 'bg-white'}`}>
-                                <CardHeader className=" pb-0">
-                                    <CardTitle className="text-[9px] font-black uppercase tracking-[0.2em] opacity-40 flex justify-between">
-                                        Github {isEditing && <span className="text-blue-500">수정 모드</span>}
-                                    </CardTitle>
-                                </CardHeader>
-                                <CardContent className="p-5 pt-1">
+                                <div className="flex flex-col min-w-0">
                                     {isEditing ? (
                                         <Input
-                                            value={formData.github}
-                                            onChange={(e) => setFormData({...formData, github: e.target.value})}
-                                            placeholder="github.com/your-id"
-                                            className={`text-sm font-bold h-8 ${darkMode ? 'bg-white/5 border-white/10' : 'bg-white'}`}
+                                            value={formData.nickname}
+                                            onChange={(e) => setFormData({...formData, nickname: e.target.value})}
+                                            className={`text-3xl font-black h-12 p-0 bg-transparent border-0 border-b rounded-none focus-visible:ring-0 ${darkMode ? 'border-white/10' : 'border-slate-200'}`}
+                                            placeholder="닉네임"
                                         />
                                     ) : (
-                                        <div className="flex items-center justify-between">
-                                            <div className="text-sm font-bold truncate">{user.github}</div>
-                                            {/*<LuExternalLink className="w-3 h-3 opacity-30" />*/}
-                                        </div>
+                                        <h2 className="text-4xl font-[900] tracking-tighter leading-none truncate">
+                                            {session.user.name}
+                                        </h2>
                                     )}
-                                </CardContent>
-                            </Card>
-
-                            {isEditing && (
-                                <Button onClick={handleSave} className="w-full h-12 bg-blue-600 hover:bg-blue-700 text-white font-black uppercase shadow-xl transition-all">
-                                    프로필 저장
-                                </Button>
-                            )}
-
-                            {!isEditing && (
-                                <div className="pt-4">
-                                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] opacity-40 mb-4 px-2">최근 활동</h4>
-                                    <div className="space-y-2 text-left">
-                                        {loadingPosts ? (
-                                            <div className="p-4 text-xs opacity-40">로딩 중...</div>
-                                        ) : userPosts.length > 0 ? (
-                                            userPosts.map((post) => (
-                                                <div
-                                                    key={post.id}
-                                                    className={`flex items-start gap-3 p-4 rounded-2xl transition-all cursor-pointer ${darkMode ? 'bg-white/[0.03] hover:bg-white/[0.06]' : 'bg-white shadow-sm hover:shadow-md'}`}
-                                                    onClick={() => {
-                                                        const targetPath = `/main/content/content_comunity/${post.id}`;
-                                                        router.push(targetPath);
-                                                    }}
-                                                >
-                                                    <div className="w-1.5 h-1.5 rounded-full bg-blue-500 mt-1.5" />
-                                                    <div className="space-y-1">
-                                                        <p className="text-[11px] font-bold leading-tight line-clamp-1">{post.title}</p>
-                                                        <p className="text-[9px] opacity-40 font-medium">
-                                                            {new Date(post.createdAt).toLocaleDateString()}
-                                                        </p>
-                                                    </div>
-                                                </div>
-                                            ))
-                                        ) : (
-                                            <div className={`p-4 rounded-2xl ${darkMode ? 'bg-white/[0.03]' : 'bg-white shadow-sm'}`}>
-                                                최근 활동이 없어요
-                                            </div>
-                                        )}
-                                    </div>
+                                    <p className="text-sm font-bold text-indigo-500 uppercase tracking-widest mt-2">
+                                        LV.{ (session.user as any).level || 1} 컬렉터
+                                    </p>
                                 </div>
-                            )}
+                            </div>
+
+                            {/* 하단: 추가 정보 (깃허브 등) */}
+                            <div className={`pt-6 border-t ${darkMode ? 'border-white/5' : 'border-slate-100'}`}>
+                                <span className="text-[10px] font-black uppercase tracking-[0.2em] opacity-30 block mb-2">연동 계정</span>
+                                {isEditing ? (
+                                    <Input
+                                        value={formData.github}
+                                        onChange={(e) => setFormData({...formData, github: e.target.value})}
+                                        className={`text-sm font-medium p-0 h-8 bg-transparent border-0 border-b rounded-none focus-visible:ring-0 opacity-50 ${darkMode ? 'border-white/10' : 'border-slate-200'}`}
+                                        placeholder="깃허브 주소 (github.com/id)"
+                                    />
+                                ) : (
+                                    <div className="flex items-center gap-2 text-sm font-bold opacity-60">
+                                        <span className="shrink-0 text-[10px] bg-indigo-500/10 text-indigo-500 px-1.5 py-0.5 rounded font-black">GH</span>
+                                        <span className="truncate">{(session.user as any).github || "연동된 계정 없음"}</span>
+                                    </div>
+                                )}
+                            </div>
                         </div>
+
+                        {/* 3. 최근 활동 리스트 */}
+                        <div className="flex-1">
+                            <h4 className="text-[10px] font-black uppercase tracking-[0.3em] opacity-30 mb-8">최근 기록</h4>
+                            <div className="space-y-px">
+                                {userPosts.length > 0 ? (
+                                    userPosts.map((post) => (
+                                        <div key={post.id} className={`group flex items-center justify-between py-5 border-b transition-colors cursor-pointer ${darkMode ? 'border-white/5 hover:border-white/20' : 'border-slate-100 hover:border-slate-300'}`}>
+                                            <span className="text-sm font-bold tracking-tight line-clamp-1">{post.title}</span>
+                                            <LuArrowRight className="w-4 h-4 opacity-0 group-hover:opacity-100 transition-all -translate-x-2 group-hover:translate-x-0" />
+                                        </div>
+                                    ))
+                                ) : (
+                                    <p className="text-xs opacity-20">작성된 기록이 없습니다.</p>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* 4. 저장 버튼 */}
+                        {isEditing && (
+                            <Button onClick={handleSave} className="w-full h-16 bg-indigo-600 hover:bg-indigo-700 text-white font-black text-lg rounded-none transition-all shadow-2xl">
+                                프로필 저장하기
+                            </Button>
+                        )}
                     </div>
                 ) : (
-                    <div className="p-8 h-full flex flex-col items-center justify-center space-y-6 text-center">
-                        <div className={`w-20 h-20 rounded-full flex items-center justify-center mb-4 ${darkMode ? 'bg-white/5' : 'bg-slate-100'}`}>
-                            <LuUser className="w-10 h-10 opacity-20" />
-                        </div>
-                        <h3 className="text-2xl font-black uppercase">로그인이 필요합니다</h3>
-                        <div onClick={(e) => e.stopPropagation()}>
-                            <AuthDialog />
-                        </div>
+                    <div className="h-full flex flex-col items-center justify-center p-12 text-center">
+                        <h3 className="text-4xl font-black tracking-tighter mb-8 leading-tight">함께 시작해봐요</h3>
+                        <AuthDialog />
                     </div>
                 )}
             </SheetContent>

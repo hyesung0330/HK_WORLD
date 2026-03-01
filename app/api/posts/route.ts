@@ -24,14 +24,31 @@ export async function GET(req: Request) {
   try {
     const { searchParams } = new URL(req.url);
     const type = searchParams.get("type") as "PIECE" | "COLUMN" | "TECHNICAL" | null;
+    const search = searchParams.get("search");
+
+    const where: any = {};
+    if (type) where.postType = type;
+    if (search) {
+      where.OR = [
+        { title: { contains: search, mode: "insensitive" } },
+        { content: { contains: search, mode: "insensitive" } },
+        { author: { name: { contains: search, mode: "insensitive" } } },
+      ];
+    }
 
     const posts = await prisma.post.findMany({
-      where: type ? { postType: type } : {},
+      where,
       include: {
         author: {
           select: {
             name: true,
             image: true,
+          }
+        },
+        _count: {
+          select: {
+            likes: true,
+            comments: true,
           }
         }
       },
@@ -55,13 +72,14 @@ export async function POST(req: Request) {
     }
 
     const body = await req.json();
-    const { title, content, mode, link, techStack, coverImage } = body as {
+    const { title, content, mode, link, techStack, coverImage, tags } = body as {
       title: string;
       content: string;
       mode: "community" | "promote" | "note";
       link?: string;
       techStack?: string;
       coverImage?: string | null;
+      tags?: string[];
     };
 
     if (!title || !content || !mode) {
@@ -85,6 +103,16 @@ export async function POST(req: Request) {
         postType,
         authorId: parseInt(session.user.id),
         // coverImage, link, techStack 은 스키마 확장 후 별도 컬럼으로 이동 예정
+        tags: tags && tags.length > 0 ? {
+          create: tags.map(tagName => ({
+            tag: {
+              connectOrCreate: {
+                where: { name: tagName },
+                create: { name: tagName }
+              }
+            }
+          }))
+        } : undefined
       },
       select: {
         id: true,
