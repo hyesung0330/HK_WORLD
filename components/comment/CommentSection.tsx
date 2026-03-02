@@ -76,12 +76,12 @@ export default function CommentSection({ darkMode, postId }: CommentSectionProps
         <section className="mt-20 space-y-10">
             <h3 className="text-xl font-black uppercase tracking-tighter flex items-center gap-3">
                 <span>댓글</span>
-                <span className="text-blue-500 font-mono text-lg">({totalCommentCount})</span>
+                <span className="font-mono text-lg">{totalCommentCount}</span>
             </h3>
 
             {/* 댓글 입력 */}
             <div className={`flex gap-4 p-5 rounded-[24px] border transition-all
-                ${darkMode ? 'bg-white/5 border-white/10 focus-within:border-blue-500/50' : 'bg-white border-slate-200 focus-within:border-blue-500'}`}>
+                ${darkMode ? 'bg-white/5 border-white/10 focus-within:border-indigo-500/50' : 'bg-white border-slate-200 focus-within:border-blue-500'}`}>
                 <div className="flex-1 flex items-center gap-3">
                     <Input
                         value={commentInput}
@@ -97,7 +97,7 @@ export default function CommentSection({ darkMode, postId }: CommentSectionProps
                     />
                     <Button 
                         onClick={() => handlePostComment()}
-                        className="rounded-xl bg-blue-600 hover:bg-blue-700 font-black text-[10px] tracking-widest px-6 shadow-none text-white">
+                        className="rounded-xl bg-indigo-500 hover:bg-indigo-600 font-black text-[10px] tracking-widest px-6 shadow-none text-white">
                         댓글 올리기
                     </Button>
                 </div>
@@ -119,7 +119,7 @@ export default function CommentSection({ darkMode, postId }: CommentSectionProps
                                             {comment.isAnonymous ? comment.nickname : (comment.author?.name || "작가")}
                                         </span>
                                         <span className="text-[9px] font-bold opacity-30 tracking-widest leading-none">
-                                            {new Date(comment.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {new Date(comment.createdAt).toLocaleTimeString("ko-KR", { hour: '2-digit', minute: '2-digit' })}
                                         </span>
                                     </div>
                                     <button className="text-[9px] font-black opacity-0 group-hover:opacity-40 tracking-widest uppercase transition-opacity">MORE</button>
@@ -144,7 +144,7 @@ export default function CommentSection({ darkMode, postId }: CommentSectionProps
                                             {reply.isAnonymous ? reply.nickname : (reply.author?.name || "작가")}
                                         </span>
                                         <span className="text-[9px] font-bold opacity-30 tracking-widest">
-                                            {new Date(reply.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                            {new Date(reply.createdAt).toLocaleTimeString("ko-KR", { hour: '2-digit', minute: '2-digit' })}
                                         </span>
                                     </div>
                                     <p className={`text-sm leading-relaxed ${darkMode ? 'text-zinc-400' : 'text-slate-600'}`}>{reply.content}</p>

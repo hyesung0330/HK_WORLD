@@ -21,22 +21,65 @@ model User {
   githubUrl     String?   @map("github_url")
 
   // 등급 체계 (필력이나 영향력)
-  reputation Int @default(0)
-  level      Int @default(1)
+  reputation Int      @default(0)
+  level      Int      @default(1)
+  xp         Int      @default(0)
+  role       UserRole @default(JUNIOR)
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  accounts Account[] // 소셜 계정 연동 정보
-  sessions Session[]
-  posts    Post[]
-  series   Series[] // 시리즈 소유 권한
-  comments Comment[]
-  likes    Like[]
-  scraps   Scrap[] // 저장된 글
+  accounts       Account[] // 소셜 계정 연동 정보
+  sessions       Session[]
+  posts          Post[]
+  series         Series[] // 시리즈 소유 권한
+  comments       Comment[]
+  likes          Like[]
+  scraps         Scrap[] // 저장된 글
+  followers      Follow[]          @relation("following")
+  following      Follow[]          @relation("follower")
+  awardsReceived BestEditorAward[] @relation("receiver")
+  awardsGiven    BestEditorAward[] @relation("giver")
 
   @@map("users")
+}
+
+enum UserRole {
+  JUNIOR
+  SENIOR
+  PRO
+  PROFESSIONAL
+}
+
+model Follow {
+  followerId  Int
+  followingId Int
+  follower    User @relation("follower", fields: [followerId], references: [id], onDelete: Cascade)
+  following   User @relation("following", fields: [followingId], references: [id], onDelete: Cascade)
+
+  @@id([followerId, followingId])
+  @@map("follows")
+}
+
+model BestEditorAward {
+  id         Int            @id @default(autoincrement())
+  type       BestEditorType
+  postId     Int            @unique // Only one person can award per post
+  post       Post           @relation(fields: [postId], references: [id], onDelete: Cascade)
+  giverId    Int
+  giver      User           @relation("giver", fields: [giverId], references: [id], onDelete: Cascade)
+  receiverId Int
+  receiver   User           @relation("receiver", fields: [receiverId], references: [id], onDelete: Cascade)
+  createdAt  DateTime       @default(now())
+
+  @@map("best_editor_awards")
+}
+
+enum BestEditorType {
+  GOLD
+  SILVER
+  BRONZE
 }
 
 // ===================================
@@ -131,10 +174,11 @@ model Post {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   // Relations
-  tags     PostTag[]
-  comments Comment[]
-  likes    Like[]
-  scraps   Scrap[]
+  tags            PostTag[]
+  comments        Comment[]
+  likes           Like[]
+  scraps          Scrap[]
+  bestEditorAward BestEditorAward?
 
   @@index([authorId])
   @@index([seriesId])

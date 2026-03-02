@@ -126,13 +126,13 @@ export default function WriteModeHeader({ postData, onPreview }: WriteModeHeader
                                         headers: { "Content-Type": "application/json" },
                                         body: JSON.stringify({ title, content, mode, link, techStack, coverImage, tags }),
                                     });
-                                    if (!res.ok) {
+                                    if (res.ok) {
+                                        const data = await res.json();
+                                        router.push(`/main/content/content_comunity/${data.post.id}`);
+                                    } else {
                                         const err = await res.json().catch(() => ({}));
                                         throw new Error(err.message || "게시글 작성에 실패했습니다.");
                                     }
-                                    const data = await res.json();
-                                    // 발행 후 해당 글 상세 페이지로 이동하도록 구성 (임시로 홈으로 이동)
-                                    router.push("/");
                                 } catch (e: any) {
                                     alert(e.message || "오류가 발생했습니다.");
                                 }

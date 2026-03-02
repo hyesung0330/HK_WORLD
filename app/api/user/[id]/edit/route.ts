@@ -29,7 +29,7 @@ export async function PATCH(
 
         // 3. 요청 데이터 파싱
         const body = await req.json();
-        const { nickname, github } = body;
+        const { nickname, github, bio } = body;
 
         // 4. DB 업데이트
         const updatedUser = await prisma.user.update({
@@ -37,6 +37,7 @@ export async function PATCH(
             data: {
                 name: nickname,
                 githubUrl: github,
+                bio: bio,
             },
         });
 
@@ -45,6 +46,7 @@ export async function PATCH(
             user: {
                 name: updatedUser.name,
                 github: updatedUser.githubUrl,
+                bio: updatedUser.bio,
             },
         }, { status: 200 });
 

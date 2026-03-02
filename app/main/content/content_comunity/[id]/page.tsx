@@ -12,6 +12,7 @@ import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import CommentSection from "@/components/comment/CommentSection";
+import {ChevronLeft} from "lucide-react";
 
 // --- 메인 페이지 컴포넌트 ---
 export default function PostDetailPage() {
@@ -103,11 +104,17 @@ export default function PostDetailPage() {
         );
     }
 
-    const formattedDate = new Date(post.createdAt).toLocaleDateString("en-US", {
+    const formattedDate = new Date(post.createdAt).toLocaleDateString("ko-KR", {
         year: 'numeric',
-        month: 'short',
+        month: 'long',
         day: 'numeric'
-    }).toUpperCase();
+    });
+
+    const postTypeLabels = {
+        TECHNICAL: "커뮤니티",
+        COLUMN: "전문 칼럼",
+        PIECE: "단편/에세이"
+    };
 
     return (
         <div className={`min-h-screen transition-colors duration-500 font-sans
@@ -122,15 +129,17 @@ export default function PostDetailPage() {
                         onClick={() => router.back()}
                         className="group flex items-center gap-3 opacity-40 hover:opacity-100 transition-all"
                     >
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] group-hover:-translate-x-1 transition-transform">← BACK</span>
+                        <div className={"flex flex-row gap-2 justify-items-center "}>
+                            <ChevronLeft className="w-7 h-7" />
+                            <span className="text-lg font-black group-hover:-translate-x-1">뒤로</span>
+                        </div>
                     </button>
-                    <button className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 hover:opacity-100">SHARE</button>
                 </div>
 
                 {/* 기사 헤더 */}
                 <header className="space-y-6 md:space-y-8 mb-10 md:mb-16">
                     <Badge className="bg-blue-600 hover:bg-blue-600 text-white font-black  rounded-md px-4 py-1 border-none shadow-none text-[10px] tracking-widest uppercase">
-                        {post.postType}
+                        {postTypeLabels[post.postType as keyof typeof postTypeLabels] || post.postType}
                     </Badge>
                     <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-tight break-keep  uppercase">
                         {post.title}
@@ -138,19 +147,17 @@ export default function PostDetailPage() {
 
                     <div className="flex items-center justify-between pt-6 border-t border-white/5">
                         <div className="flex items-center gap-4">
-                            <Avatar className="w-10 h-10 border border-white/10 grayscale hover:grayscale-0 transition-all cursor-pointer">
+                            <Avatar onClick={() => router.push(`/user/${post.author?.id}`)} className="w-10 h-10 border border-white/10 grayscale hover:grayscale-0 transition-all cursor-pointer">
                                 <AvatarImage src={post.author?.image} />
                                 <AvatarFallback className="font-black  text-xs">{post.author?.name?.slice(0, 2).toUpperCase()}</AvatarFallback>
                             </Avatar>
                             <div className="flex flex-col">
-                                <span className="text-sm font-black  uppercase tracking-tight leading-none mb-1">{post.author?.name || "ANONYMOUS"}</span>
-                                <span className="text-[10px] font-bold opacity-30 tracking-[0.2em]">{formattedDate}</span>
+                                <span onClick={() => router.push(`/user/${post.author?.id}`)} className="text-sm font-black leading-none mb-1 cursor-pointer hover:underline">{post.author?.name || "ANONYMOUS"}</span>
+                                <span className="text-sm font-bold opacity-30">{formattedDate}</span>
                             </div>
                         </div>
-                        <div className="flex items-center gap-4 text-[10px] font-black tracking-[0.3em] uppercase opacity-30">
-                            <span>VIEW / {post.views || 0}</span>
-                            <span className="hidden md:inline">·</span>
-                            <span className="hidden md:inline">LEVEL / {post.author?.level || 1}</span>
+                        <div className="flex items-center gap-4 text-sm font-black">
+                            <span>조회수 {post.views || 0}</span>
                         </div>
                     </div>
 
@@ -169,9 +176,7 @@ export default function PostDetailPage() {
                 {/* 본문 기사 */}
                 <article className={`text-xl md:text-2xl leading-relaxed font-medium mb-24 whitespace-pre-wrap
                     ${darkMode ? 'text-zinc-400' : 'text-slate-600'}`}>
-                    <div className="first-letter:text-6xl first-letter:font-black first-letter:mr-4 first-letter:float-left first-letter:text-blue-500 ">
-                        {post.content}
-                    </div>
+                    <div>{post.content}</div>
                 </article>
 
                 {/* 인터랙션 영역 */}
@@ -205,8 +210,8 @@ export default function PostDetailPage() {
                         <p className="text-sm opacity-40 max-w-md font-medium leading-relaxed">
                             {post.author?.bio || "No bio yet. Follow this artist for more upcoming thoughts and deep-dives into tech and design."}
                         </p>
-                        <Button variant="outline" className="rounded-full font-black  text-[10px] tracking-widest mt-4">
-                            FOLLOW ARTIST
+                        <Button variant="outline" onClick={() => router.push(`/user/${post.author?.id}`)} className="rounded-full font-black  text-[10px] tracking-widest mt-4">
+                            에디터 프로필 보기
                         </Button>
                     </div>
                 </div>

@@ -14,7 +14,7 @@ import { useTheme } from "@/app/context/darkmood";
 import { FaSearch } from "react-icons/fa";
 
 export function SearchDialog({
-                                 placeholder = "검색어를 입력하세요..."
+                                 placeholder = "검색어를 입력하세요"
                              }: { placeholder?: string }) {
     const [isOpen, setIsOpen] = useState(false);
     const [query, setQuery] = useState("");
@@ -109,7 +109,7 @@ export function SearchDialog({
                 <DialogHeader className="p-0 mb-4">
                     <DialogTitle className="flex items-center gap-2 text-sm md:text-base">
                         <Search className="w-4 h-4 text-muted-foreground"/>
-                        <span>Search</span>
+                        <span>검색</span>
                     </DialogTitle>
                 </DialogHeader>
 

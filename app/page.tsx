@@ -77,9 +77,7 @@ export default function CommunityPage() {
             <MainHeader />
 
             <main className="pt-24 md:pt-40 pb-20 md:pb-32 max-w-6xl mx-auto px-4 md:px-8">
-                {/* --- 헤더 섹션: 타이포그래피 강조 --- */}
-                {/* --- 헤더 섹션: 애니메이션 고도화 --- */}
-                <header className="relative mb-16 md:mb-24 min-h-[300px] md:min-h-[400px]">
+                <header className="relative md:mb-24 min-h-[300px] md:min-h-[400px]">
                     <motion.div
                         initial={{ opacity: 0 }}
                         animate={{ opacity: [0.1, 0.2, 0.1] }}
@@ -90,7 +88,7 @@ export default function CommunityPage() {
                     {/* AnimatePresence로 슬라이드 전환 감지 */}
                     <AnimatePresence mode="wait">
                         <motion.div
-                            key={index} // 키가 바뀌면 애니메이션 재실행
+                            key={index}
                             initial={{ x: 20, opacity: 0 }}
                             animate={{ x: 0, opacity: 1 }}
                             exit={{ x: -20, opacity: 0 }}
@@ -149,7 +147,7 @@ export default function CommunityPage() {
                 </header>
 
                 {/* --- 필터 바 --- */}
-                <nav className={`flex justify-between items-center mb-8 md:mb-12 border-y py-4 md:py-6 transition-colors ${darkMode ? 'border-white/10' : 'border-slate-200'}`}>
+                <nav className={`flex justify-between items-center mb-0 md:mb-12 py-4 md:py-6 transition-colors ${darkMode ? 'border-white/10' : 'border-slate-200'}`}>
                     <div className="flex gap-6 md:gap-10 text-sm md:text-base font-black">
                         <button className="relative group text-indigo-500">
                             최근 컬럼

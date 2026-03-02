@@ -3,6 +3,8 @@
 import React, { useState } from "react";
 import { useTheme } from "@/app/context/darkmood";
 import { Button } from "@/components/ui/button";
+import { signIn } from "next-auth/react";
+import { useRouter } from "next/navigation";
 import {
     Card,
     CardContent,
@@ -19,19 +21,98 @@ import KaKaoLoginButton from "@/components/button/kakao_login_button/page";
 
 export default function AuthDialog() {
     const { darkMode } = useTheme();
+    const router = useRouter();
     const [isLoginView, setIsLoginView] = useState(true); // 로그인/회원가입 전환 상태
     const [showEmailForm, setShowEmailForm] = useState(false); // 이메일 가입 폼 표시 상태
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
+
+    // 폼 데이터 상태
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [name, setName] = useState("");
 
     // 상태 전환 시 폼 노출 여부 초기화
     const toggleView = () => {
         setIsLoginView(!isLoginView);
         setShowEmailForm(false);
+        setError("");
+    };
+
+    const handleLogin = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError("");
+
+        try {
+            const res = await signIn("credentials", {
+                email,
+                password,
+                redirect: false,
+            });
+
+            if (res?.error) {
+                setError("이메일 또는 비밀번호가 올바르지 않습니다.");
+            } else {
+                router.refresh();
+                // 다이얼로그를 닫기 위해 window.location.reload()를 쓸 수도 있지만 
+                // 보통은 다이얼로그 상태를 제어하는 것이 좋습니다. 
+                // 여기서는 간단히 새로고침으로 세션 반영.
+                window.location.reload();
+            }
+        } catch (err) {
+            setError("로그인 중 오류가 발생했습니다.");
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const handleRegister = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError("");
+
+        try {
+            const res = await fetch("/api/auth/register", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email, password, name }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                // 회원가입 성공 시 로그인 뷰로 전환
+                setIsLoginView(true);
+                setShowEmailForm(false);
+                setError("회원가입이 완료되었습니다. 로그인을 진행해주세요.");
+            } else {
+                setError(data.message || "회원가입 중 오류가 발생했습니다.");
+            }
+        } catch (err) {
+            setError("서버와의 통신 중 오류가 발생했습니다.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     return (
-        <Dialog onOpenChange={(open) => !open && setShowEmailForm(false)}>
+        <Dialog onOpenChange={(open) => {
+            if (!open) {
+                setShowEmailForm(false);
+                setError("");
+                setEmail("");
+                setPassword("");
+                setName("");
+            }
+        }}>
             <DialogTrigger asChild>
-                <Button variant="ghost">시작하기</Button>
+                <Button
+                    variant="ghost"
+                    className="rounded-none border-b-1 border-black hover:bg-zinc-100 transition-all"
+                >
+                    시작하기
+                </Button>
             </DialogTrigger>
             <DialogContent className={`w-[95vw] sm:max-w-[420px] p-0 border-none overflow-hidden rounded-3xl ${darkMode ? "bg-[#0a0a0a]" : "bg-slate-50"}`}>
 
@@ -46,38 +127,86 @@ export default function AuthDialog() {
                         </div>
                         {/* --- 로그인 뷰일 때 --- */}
                         {isLoginView ? (
-                            <div className="grid gap-4">
+                            <form onSubmit={handleLogin} className="grid gap-4">
                                 <div className="grid gap-2">
                                     <Label className="text-[10px] font-black uppercase tracking-widest opacity-70">이메일</Label>
-                                    <Input type="email" placeholder="m@example.com" className={darkMode ? "bg-[#1c1c1c] border-none" : "bg-slate-100 border-none"} />
+                                    <Input 
+                                        type="email" 
+                                        placeholder="m@example.com" 
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                        className={darkMode ? "bg-[#1c1c1c] border-none" : "bg-slate-100 border-none"} 
+                                    />
                                 </div>
                                 <div className="grid gap-2">
                                     <div className="flex justify-between items-center">
                                         <Label className="text-[10px] font-black uppercase tracking-widest opacity-70">비밀번호</Label>
-                                        <button className="text-[9px] font-bold opacity-40 hover:opacity-100 uppercase">비밀번호를 잊어버리셨나요?</button>
+                                        <button type="button" className="text-[9px] font-bold opacity-40 hover:opacity-100 uppercase">비밀번호를 잊어버리셨나요?</button>
                                     </div>
-                                    <Input type="password" placeholder="••••••••" className={darkMode ? "bg-[#1c1c1c] border-none" : "bg-slate-100 border-none"} />
+                                    <Input 
+                                        type="password" 
+                                        placeholder="••••••••" 
+                                        value={password}
+                                        onChange={(e) => setPassword(e.target.value)}
+                                        required
+                                        className={darkMode ? "bg-[#1c1c1c] border-none" : "bg-slate-100 border-none"} 
+                                    />
                                 </div>
-                                <Button className={`w-full font-semibold h-12 rounded-xl mt-2 ${darkMode ? "bg-white text-black" : "bg-black text-white"}`}>로그인</Button>
-                            </div>
+                                {error && <p className="text-[11px] text-red-500 font-bold">{error}</p>}
+                                <Button 
+                                    type="submit" 
+                                    disabled={isLoading}
+                                    className={`w-full font-semibold h-12 rounded-xl mt-2 ${darkMode ? "bg-white text-black" : "bg-black text-white"}`}
+                                >
+                                    {isLoading ? "처리 중..." : "로그인"}
+                                </Button>
+                            </form>
                         ) : (
                             /* --- 회원가입 뷰일 때 (이메일 폼 섹션) --- */
                             <div className={`transition-all duration-500 ease-in-out overflow-hidden ${showEmailForm ? "max-h-[500px] opacity-100" : "max-h-0 opacity-0"}`}>
-                                <div className="grid gap-4">
+                                <form onSubmit={handleRegister} className="grid gap-4">
                                     <div className="grid gap-2">
                                         <Label className="text-[10px] font-black uppercase tracking-widest opacity-70">닉네임</Label>
-                                        <Input placeholder="닉네임을 입력하세요" className={darkMode ? "bg-[#1c1c1c] border-none" : "bg-slate-100 border-none"} />
+                                        <Input 
+                                            placeholder="닉네임을 입력하세요" 
+                                            value={name}
+                                            onChange={(e) => setName(e.target.value)}
+                                            required={showEmailForm}
+                                            className={darkMode ? "bg-[#1c1c1c] border-none" : "bg-slate-100 border-none"} 
+                                        />
                                     </div>
                                     <div className="grid gap-2">
                                         <Label className="text-[10px] font-black uppercase tracking-widest opacity-70">이메일</Label>
-                                        <Input type="email" placeholder="name@example.com" className={darkMode ? "bg-[#1c1c1c] border-none" : "bg-slate-100 border-none"} />
+                                        <Input 
+                                            type="email" 
+                                            placeholder="name@example.com" 
+                                            value={email}
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            required={showEmailForm}
+                                            className={darkMode ? "bg-[#1c1c1c] border-none" : "bg-slate-100 border-none"} 
+                                        />
                                     </div>
                                     <div className="grid gap-2">
                                         <Label className="text-[10px] font-black uppercase tracking-widest opacity-70">비밀번호</Label>
-                                        <Input type="password" placeholder="••••••••" className={darkMode ? "bg-[#1c1c1c] border-none" : "bg-slate-100 border-none"} />
+                                        <Input 
+                                            type="password" 
+                                            placeholder="••••••••" 
+                                            value={password}
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            required={showEmailForm}
+                                            className={darkMode ? "bg-[#1c1c1c] border-none" : "bg-slate-100 border-none"} 
+                                        />
                                     </div>
-                                    <Button className={`w-full font-semibold h-12 rounded-xl mt-2 ${darkMode ? "bg-white text-black" : "bg-black text-white"}`}>가입 완료</Button>
-                                </div>
+                                    {error && <p className="text-[11px] text-red-500 font-bold">{error}</p>}
+                                    <Button 
+                                        type="submit" 
+                                        disabled={isLoading}
+                                        className={`w-full font-semibold h-12 rounded-xl mt-2 ${darkMode ? "bg-white text-black" : "bg-black text-white"}`}
+                                    >
+                                        {isLoading ? "처리 중..." : "가입 완료"}
+                                    </Button>
+                                </form>
                             </div>
                         )}
                     </CardContent>
@@ -103,7 +232,7 @@ export default function AuthDialog() {
                                 onClick={() => setShowEmailForm(true)}
                                 className={`w-full font-semibold h-12 rounded-md ${darkMode ? "bg-white text-black" : "bg-black text-white"}`}
                             >
-                                Textra로 시작하기
+                                이메일로 시작하기
                             </Button>
                         )}
 

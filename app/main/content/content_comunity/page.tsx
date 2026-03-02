@@ -35,6 +35,8 @@ export default function CommunityFeedPage() {
     const [mounted, setMounted] = useState(false);
     const [posts, setPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
+    const TAGS = ["전체", "IT", "연애", "주식", "정부지원"] as const;
+    const [selectedTag, setSelectedTag] = useState<typeof TAGS[number]>("전체");
 
     // 페이지네이션
     const [currentPage, setCurrentPage] = useState(1);
@@ -42,12 +44,14 @@ export default function CommunityFeedPage() {
 
     useEffect(() => {
         setMounted(true);
-        fetchPosts();
-    }, []);
+        fetchPosts(selectedTag);
+    }, [selectedTag]);
 
-    const fetchPosts = async () => {
+    const fetchPosts = async (tag?: string) => {
         try {
-            const res = await fetch("/api/posts?type=TECHNICAL");
+            const query = new URLSearchParams({ type: "TECHNICAL" });
+            if (tag && tag !== "전체") query.set("tag", tag);
+            const res = await fetch(`/api/posts?${query.toString()}`);
             if (res.ok) {
                 const data = await res.json();
                 setPosts(data);
@@ -63,6 +67,12 @@ export default function CommunityFeedPage() {
 
     const totalPages = Math.ceil(posts.length / postsPerPage);
     const currentPosts = posts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
+
+    const postTypeLabels = {
+        TECHNICAL: "컬럼",
+        COLUMN: "전문 칼럼",
+        PIECE: "단편/에세이"
+    };
 
     return (
         <div className={`min-h-screen transition-colors duration-500 font-sans
@@ -80,6 +90,23 @@ export default function CommunityFeedPage() {
                         <p className={`text-sm font-bold tracking-tight ${darkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
                             당신의 이야기를 들려주세요
                         </p>
+                    </div>
+
+                    {/* 태그 필터 */}
+                    <div className="flex items-center gap-2">
+                        {TAGS.map(tag => (
+                            <button
+                                key={tag}
+                                onClick={() => setSelectedTag(tag)}
+                                className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest border transition-colors ${
+                                    selectedTag === tag
+                                        ? 'bg-blue-600 text-white border-blue-600'
+                                        : (darkMode ? 'border-white/10 hover:bg-white/5' : 'border-slate-200 hover:bg-slate-100')
+                                }`}
+                            >
+                                {tag}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
@@ -107,7 +134,7 @@ export default function CommunityFeedPage() {
                                     </AspectRatio>
                                     <div className="absolute top-4 left-4">
                                         <Badge className="bg-blue-600/90 backdrop-blur-md border-none font-black  text-[10px]">
-                                            {post.postType}
+                                            {postTypeLabels[post.postType as keyof typeof postTypeLabels] || post.postType}
                                         </Badge>
                                     </div>
                                 </div>

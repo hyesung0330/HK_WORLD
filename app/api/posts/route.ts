@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { addXp, XP_RULES } from "@/lib/xp";
 
 // UI 모드 -> DB PostType 매핑
 function mapModeToPostType(mode: string): "PIECE" | "COLUMN" | "TECHNICAL" {
@@ -25,6 +26,7 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const type = searchParams.get("type") as "PIECE" | "COLUMN" | "TECHNICAL" | null;
     const search = searchParams.get("search");
+    const tag = searchParams.get("tag"); // 프리셋 태그 필터
 
     const where: any = {};
     if (type) where.postType = type;
@@ -34,6 +36,11 @@ export async function GET(req: Request) {
         { content: { contains: search, mode: "insensitive" } },
         { author: { name: { contains: search, mode: "insensitive" } } },
       ];
+    }
+    if (tag && tag !== "전체") {
+      where.tags = {
+        some: { tag: { name: tag } }
+      };
     }
 
     const posts = await prisma.post.findMany({
@@ -45,6 +52,7 @@ export async function GET(req: Request) {
             image: true,
           }
         },
+        tags: { include: { tag: true } },
         _count: {
           select: {
             likes: true,
@@ -88,6 +96,17 @@ export async function POST(req: Request) {
 
     const postType = mapModeToPostType(mode);
 
+    // 프로 에디터(레벨 31+)만 COLUMN 작성 가능
+    if (postType === "COLUMN") {
+      const me = await prisma.user.findUnique({ where: { id: parseInt(session.user.id) } });
+      if (!me) {
+        return NextResponse.json({ message: "사용자를 찾을 수 없습니다." }, { status: 404 });
+      }
+      if ((me.level || 1) < 31) {
+        return NextResponse.json({ message: "프로 등급(레벨 31+)만 전문 컬럼을 작성할 수 있습니다." }, { status: 403 });
+      }
+    }
+
     // promote 모드 보조 정보는 본문 맨 앞에 메타로 병합 저장 (스키마 확장 전 임시 처리)
     const promoteMeta = mode === "promote"
       ? `\n\n---\nLink: ${link || "-"}\nTech: ${techStack || "-"}`
@@ -122,6 +141,9 @@ export async function POST(req: Request) {
         createdAt: true,
       }
     });
+
+    // 글쓰기 XP 지급 (20)
+    await addXp(created.authorId, XP_RULES.POST);
 
     return NextResponse.json({
       message: "게시글이 등록되었습니다.",

@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { cookies } from "next/headers";
+import { addXp, XP_RULES } from "@/lib/xp";
 
 export async function GET(
   req: Request,
@@ -79,6 +80,11 @@ export async function POST(
         await prisma.like.create({
           data: { userId, postId },
         });
+        // 게시글 작성자 XP 지급
+        const post = await prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } });
+        if (post) {
+          await addXp(post.authorId, XP_RULES.LIKE);
+        }
         return NextResponse.json({ isLiked: true });
       }
     } else {
@@ -103,6 +109,11 @@ export async function POST(
         await prisma.like.create({
           data: { anonymousId, postId },
         });
+        // 게시글 작성자 XP 지급 (익명 좋아요도 반영)
+        const post = await prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } });
+        if (post) {
+          await addXp(post.authorId, XP_RULES.LIKE);
+        }
         return NextResponse.json({ isLiked: true });
       }
     }
