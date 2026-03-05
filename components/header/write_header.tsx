@@ -37,21 +37,22 @@ export default function WriteModeHeader({ postData, onPreview }: WriteModeHeader
             {/* --- Left Section: Logo & Status --- */}
             <div className="flex items-center gap-3 md:gap-6">
                 <div className="cursor-pointer shrink-0" onClick={() => router.push('/')}>
-                    <img
-                        src={darkMode ? "/image/Logo/MainLogo/Textra_Logo_v1_black2.png" : "/image/Logo/MainLogo/Textra_Logo_v1.png "}
-                        alt="Textra Logo"
-                        className={darkMode ? "w-14 md:w-18 h-10 md:h-14" : "w-14 md:w-18 h-10 md:h-15"}
-                    />
+                    {/*<img*/}
+                    {/*    src={darkMode ? "/image/Logo/MainLogo/Textra_Logo_v1_black2.png" : "/image/Logo/MainLogo/Textra_Logo_v1.png "}*/}
+                    {/*    alt="Textra Logo"*/}
+                    {/*    className={darkMode ? "w-14 md:w-18 h-10 md:h-14" : "w-14 md:w-18 h-10 md:h-15"}*/}
+                    {/*/>*/}
+                    <span className={"font-semibold"}>Textra</span>
                 </div>
 
-                {isWritePage && (
-                    <div className="hidden sm:flex items-center gap-3 md:gap-6">
-                        <div className="h-4 w-[1px] bg-current opacity-20"></div>
-                        <span className="text-[9px] md:text-[10px] font-bold opacity-40 uppercase tracking-widest animate-pulse whitespace-nowrap">
-                            자동 저장 완료
-                        </span>
-                    </div>
-                )}
+                {/*{isWritePage && (*/}
+                {/*    <div className="hidden sm:flex items-center gap-3 md:gap-6">*/}
+                {/*        <div className="h-4 w-[1px] bg-current opacity-20"></div>*/}
+                {/*        <span className="text-[9px] md:text-[10px] font-bold opacity-40 uppercase tracking-widest animate-pulse whitespace-nowrap">*/}
+                {/*            자동 저장 완료*/}
+                {/*        </span>*/}
+                {/*    </div>*/}
+                {/*)}*/}
 
                 {!isWritePage && (
                     <div className="hidden lg:flex gap-6 text-[10px] font-black uppercase tracking-[0.2em] opacity-60">

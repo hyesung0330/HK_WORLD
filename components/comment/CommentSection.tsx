@@ -4,7 +4,9 @@ import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
+import { Loading } from "@/components/ui/loading";
+import {Button} from "@/components/ui/button";
+import {Badge} from "@/components/ui/badge";
 
 interface CommentSectionProps {
     darkMode: boolean;
@@ -68,7 +70,11 @@ export default function CommentSection({ darkMode, postId }: CommentSectionProps
         }
     };
 
-    if (loading) return <div className="mt-10 opacity-40 text-xs font-black uppercase tracking-widest">Loading Comments...</div>;
+    if (loading) return (
+        <div className="mt-20 flex justify-center py-10">
+            <Loading message="댓글을 불러오고 있습니다" />
+        </div>
+    );
 
     const totalCommentCount = comments.reduce((acc, curr) => acc + 1 + (curr.replies?.length || 0), 0);
 
@@ -81,7 +87,7 @@ export default function CommentSection({ darkMode, postId }: CommentSectionProps
 
             {/* 댓글 입력 */}
             <div className={`flex gap-4 p-5 rounded-[24px] border transition-all
-                ${darkMode ? 'bg-white/5 border-white/10 focus-within:border-indigo-500/50' : 'bg-white border-slate-200 focus-within:border-blue-500'}`}>
+                ${darkMode ? 'bg-white/5 border-white/10 focus-within:border-indigo-500/50' : 'bg-white border-slate-200 focus-within:border-indigo-600'}`}>
                 <div className="flex-1 flex items-center gap-3">
                     <Input
                         value={commentInput}
@@ -118,6 +124,14 @@ export default function CommentSection({ darkMode, postId }: CommentSectionProps
                                         <span className="text-sm font-black  uppercase tracking-tight">
                                             {comment.isAnonymous ? comment.nickname : (comment.author?.name || "작가")}
                                         </span>
+                                        {!comment.isAnonymous && comment.author?.role && (
+                                            <Badge variant="secondary" className="rounded-full px-2 py-0 text-[8px] font-semibold bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
+                                                {comment.author.role === "JUNIOR" ? "주니어" :
+                                                    comment.author.role === "SENIOR" ? "시니어" :
+                                                        comment.author.role === "PRO" ? "프로" :
+                                                            comment.author.role === "PROFESSIONAL" ? "전문" : "에디터"}
+                                            </Badge>
+                                        )}
                                         <span className="text-[9px] font-bold opacity-30 tracking-widest leading-none">
                                             {new Date(comment.createdAt).toLocaleTimeString("ko-KR", { hour: '2-digit', minute: '2-digit' })}
                                         </span>
@@ -127,7 +141,7 @@ export default function CommentSection({ darkMode, postId }: CommentSectionProps
                                 <p className={`text-sm leading-relaxed ${darkMode ? 'text-zinc-400' : 'text-slate-600'}`}>{comment.content}</p>
                                 <button
                                     onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                                    className="text-[9px] font-black text-blue-500 uppercase tracking-[0.2em] pt-1 hover:line-through"
+                                    className="text-[9px] font-black text-indigo-600 uppercase tracking-[0.2em] pt-1 hover:line-through"
                                 >
                                     답글 달기
                                 </button>
@@ -137,12 +151,20 @@ export default function CommentSection({ darkMode, postId }: CommentSectionProps
                         {/* 대댓글 */}
                         {comment.replies?.map((reply: any) => (
                             <div key={reply.id} className="pl-12 flex gap-4 text-left">
-                                <div className="w-px h-10 bg-blue-500/20 mt-2 self-start" />
-                                <div className="flex-1 space-y-2 bg-blue-500/5 p-4 rounded-2xl border border-blue-500/10">
+                                <div className="w-px h-10 bg-indigo-500/20 mt-2 self-start" />
+                                <div className="flex-1 space-y-2 bg-indigo-500/5 p-4 rounded-2xl border border-indigo-500/10">
                                     <div className="flex items-center gap-3">
-                                        <span className="text-sm font-black  text-blue-500 uppercase">
+                                        <span className="text-sm font-black  text-indigo-600 uppercase">
                                             {reply.isAnonymous ? reply.nickname : (reply.author?.name || "작가")}
                                         </span>
+                                        {!reply.isAnonymous && reply.author?.role && (
+                                            <Badge variant="secondary" className="rounded-full px-2 py-0 text-[8px] font-semibold bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
+                                                {reply.author.role === "JUNIOR" ? "주니어" :
+                                                    reply.author.role === "SENIOR" ? "시니어" :
+                                                        reply.author.role === "PRO" ? "프로" :
+                                                            reply.author.role === "PROFESSIONAL" ? "전문" : "에디터"}
+                                            </Badge>
+                                        )}
                                         <span className="text-[9px] font-bold opacity-30 tracking-widest">
                                             {new Date(reply.createdAt).toLocaleTimeString("ko-KR", { hour: '2-digit', minute: '2-digit' })}
                                         </span>
@@ -170,7 +192,7 @@ export default function CommentSection({ darkMode, postId }: CommentSectionProps
                                     />
                                     <Button 
                                         onClick={() => handlePostComment(comment.id)}
-                                        size="sm" className="rounded-lg bg-zinc-800 text-[9px] font-black tracking-widest text-white shadow-none px-4">SUBMIT</Button>
+                                        size="sm" className="rounded-lg bg-zinc-800 text-[9px] font-black tracking-widest text-white shadow-none px-4">전송</Button>
                                 </div>
                             </div>
                         )}

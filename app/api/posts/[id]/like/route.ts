@@ -80,6 +80,20 @@ export async function POST(
         await prisma.like.create({
           data: { userId, postId },
         });
+
+        // 알림 생성 (Raw Query 사용)
+        try {
+            const post = await prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } });
+            if (post && post.authorId !== userId) {
+                await prisma.$executeRaw`
+                    INSERT INTO notifications (user_id, sender_id, post_id, type, is_read, created_at)
+                    VALUES (${post.authorId}, ${userId}, ${postId}, 'LIKE', false, NOW())
+                `;
+            }
+        } catch (notifyError) {
+            console.error("LIKE_NOTIFICATION_ERROR:", notifyError);
+        }
+
         // 게시글 작성자 XP 지급
         const post = await prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } });
         if (post) {
@@ -109,6 +123,9 @@ export async function POST(
         await prisma.like.create({
           data: { anonymousId, postId },
         });
+
+        // 익명 좋아요는 알림 생략 (또는 발신자 없이 생성 가능하지만 일단 생략)
+
         // 게시글 작성자 XP 지급 (익명 좋아요도 반영)
         const post = await prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } });
         if (post) {

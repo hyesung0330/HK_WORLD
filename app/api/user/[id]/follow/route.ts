@@ -53,6 +53,18 @@ export async function POST(
                     followingId,
                 },
             });
+
+            // 알림 생성 (Raw Query 사용 - Prisma Client 재생성 문제 대비)
+            try {
+                await prisma.$executeRaw`
+                    INSERT INTO notifications (user_id, sender_id, type, is_read, created_at)
+                    VALUES (${followingId}, ${followerId}, 'FOLLOW', false, NOW())
+                `;
+            } catch (notifyError) {
+                console.error("NOTIFICATION_CREATE_ERROR:", notifyError);
+                // 알림 생성 실패가 팔로우 자체의 실패로 이어지지는 않게 함
+            }
+
             return NextResponse.json({ message: "팔로우했습니다.", isFollowing: true });
         }
 

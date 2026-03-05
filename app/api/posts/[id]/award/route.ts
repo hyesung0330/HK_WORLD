@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { addXp, XP_RULES } from "@/lib/xp";
+import { addXp, XP_RULES, addPoints, POINT_RULES } from "@/lib/xp";
 import { BestEditorType } from "@prisma/client";
 
 export async function POST(
@@ -55,9 +55,22 @@ export async function POST(
       }
     });
 
-    // 수상자(게시글 작성자) XP 지급
+    // 수상자(게시글 작성자) XP 및 포인트 지급
     const awardXp = XP_RULES.AWARD[normalizedType as 'GOLD'|'SILVER'|'BRONZE'];
+    const awardPoints = POINT_RULES.AWARD[normalizedType as 'GOLD'|'SILVER'|'BRONZE'];
+
     await addXp(post.authorId, awardXp);
+    await addPoints(post.authorId, awardPoints);
+
+    // 알림 생성
+    try {
+        await prisma.$executeRaw`
+            INSERT INTO notifications (user_id, sender_id, post_id, type, is_read, created_at)
+            VALUES (${post.authorId}, ${giverId}, ${postId}, 'AWARD', false, NOW())
+        `;
+    } catch (notifyError) {
+        console.error("AWARD_NOTIFICATION_ERROR:", notifyError);
+    }
 
     return NextResponse.json({ message: "베스트 에디터 메달이 수여되었습니다.", award: created }, { status: 201 });
   } catch (error) {

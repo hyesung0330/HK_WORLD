@@ -10,8 +10,8 @@ import {
 import {Input} from "@/components/ui/input";
 import { useRouter } from "next/navigation";
 import {Search, Loader2} from "lucide-react";
+import { Loading } from "@/components/ui/loading";
 import { useTheme } from "@/app/context/darkmood";
-import { FaSearch } from "react-icons/fa";
 
 export function SearchDialog({
                                  placeholder = "검색어를 입력하세요"
@@ -76,21 +76,22 @@ export function SearchDialog({
 
     return (
         <Dialog open={isOpen} onOpenChange={setIsOpen}>
+            <DialogTitle/>
             <DialogTrigger asChild>
-                <div className="flex items-center justify-end flex-1 w-full min-w-[300px] lg:min-w-[500px] ml-auto">
+                <div className="flex items-center justify-center w-full md:flex-1 md:min-w-[300px] lg:min-w-[500px]">
                     {/* 1. 모바일: 아이콘만 노출 (md 미만) */}
                     <button
-                        className={`p-2 rounded-full md:hidden transition-colors
+                        className={`p-2 rounded-full md:hidden transition-all active:scale-95 flex items-center justify-center
                     ${darkMode ? 'hover:bg-white/10 text-gray-400' : 'hover:bg-slate-100 text-slate-500'}`}
                     >
-                        <FaSearch className="w-4 h-4" />
+                        <Search className="w-4.5 h-4.5" />
                     </button>
 
                     {/* 2. 데스크톱: 유연한 검색바 (md 이상) */}
                     <div
                         className="relative group cursor-pointer w-full hidden md:block"
                     >
-                        <FaSearch className={`absolute left-5 top-1/2 -translate-y-1/2 w-3 h-3 transition-colors
+                        <Search className={`absolute left-5 top-1/2 -translate-y-1/2 w-3 h-3 transition-colors
                     ${darkMode ? 'text-zinc-600 group-hover:text-zinc-400' : 'text-slate-400 group-hover:text-slate-600'}`}
                         />
 
@@ -120,18 +121,24 @@ export function SearchDialog({
                             onChange={(e) => setQuery(e.target.value)}
                             onKeyDown={handleKeyDown}
                             placeholder={placeholder}
-                            className={`text-base md:text-lg py-5 md:py-6 shadow-sm focus-visible:ring-primary pr-12 rounded-2xl ${darkMode ? 'bg-white/5 border-white/10' : 'bg-slate-50'}`}
+                            className={`text-base md:text-lg py-5 md:py-6 shadow-sm focus-visible:ring-indigo-600 pr-12 rounded-2xl ${darkMode ? 'bg-white/5 border-white/10' : 'bg-slate-50'}`}
                             autoFocus
                         />
                         {loading && (
-                            <div className="absolute right-4 top-1/2 -translate-y-1/2 opacity-40">
-                                <Loader2 className="w-5 h-5 animate-spin" />
+                            <div className="absolute right-4 top-1/2 -translate-y-1/2">
+                                <Loader2 className="w-5 h-5 animate-spin text-indigo-500" />
                             </div>
                         )}
                     </div>
 
                     {/* 실시간 검색 결과 리스트 */}
                     <div className="space-y-2 max-h-[400px] overflow-y-auto custom-scrollbar">
+                        {query.trim() !== "" && loading && results.length === 0 && (
+                            <div className="py-20 flex justify-center items-center">
+                                <Loading message="검색 결과 분석 중" />
+                            </div>
+                        )}
+
                         {query.trim() !== "" && !loading && results.length === 0 && (
                             <div className="py-10 text-center opacity-40 font-bold uppercase tracking-widest text-xs">
                                 검색 결과가 없습니다

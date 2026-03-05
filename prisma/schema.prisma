@@ -24,7 +24,11 @@ model User {
   reputation Int      @default(0)
   level      Int      @default(1)
   xp         Int      @default(0)
+  points     Int      @default(0) // 작가 포인트 (정산 가능)
   role       UserRole @default(JUNIOR)
+
+  consecutiveDays Int      @default(0) @map("consecutive_days")
+  lastAttendanceDate DateTime? @map("last_attendance_date")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -41,6 +45,11 @@ model User {
   following      Follow[]          @relation("follower")
   awardsReceived BestEditorAward[] @relation("receiver")
   awardsGiven    BestEditorAward[] @relation("giver")
+  postViews      PostView[]
+  settlementRequests SettlementRequest[]
+  attendances    Attendance[]
+  notifications  Notification[] @relation("user_notifications")
+  sentNotifications Notification[] @relation("sender_notifications")
 
   @@map("users")
 }
@@ -50,6 +59,25 @@ enum UserRole {
   SENIOR
   PRO
   PROFESSIONAL
+}
+
+enum SettlementStatus {
+  PENDING
+  COMPLETED
+  REJECTED
+}
+
+model SettlementRequest {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  amount    Int
+  status    SettlementStatus @default(PENDING)
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("settlement_requests")
 }
 
 model Follow {
@@ -179,6 +207,8 @@ model Post {
   likes           Like[]
   scraps          Scrap[]
   bestEditorAward BestEditorAward?
+  postViews       PostView[]
+  notifications   Notification[]
 
   @@index([authorId])
   @@index([seriesId])
@@ -259,4 +289,58 @@ model Scrap {
 
   @@id([userId, postId])
   @@map("scraps")
+}
+
+// ===================================
+// PostView: 조회수 추적 및 경험치 지급 제한
+// ===================================
+model PostView {
+  id        Int      @id @default(autoincrement())
+  postId    Int      @map("post_id")
+  userId    Int?     @map("user_id") // 로그인 유저
+  sessionId String?  @map("session_id") // 비로그인 유저 (세션/쿠키 기반)
+  count     Int      @default(1)
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  post Post @relation(fields: [postId], references: [id], onDelete: Cascade)
+  user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([postId, userId])
+  @@unique([postId, sessionId])
+  @@map("post_views")
+}
+
+model Attendance {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  date      DateTime @default(now())
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("attendances")
+}
+
+enum NotificationType {
+  FOLLOW
+  LIKE
+  COMMENT
+  AWARD
+  SYSTEM
+}
+
+model Notification {
+  id        Int              @id @default(autoincrement())
+  userId    Int              @map("user_id") // 수신자
+  type      NotificationType
+  senderId  Int?             @map("sender_id") // 발신자 (시스템 알림일 경우 null 가능)
+  postId    Int?             @map("post_id") // 관련 게시글 ID (타입에 따라 선택적)
+  isRead    Boolean          @default(false) @map("is_read")
+  createdAt DateTime         @default(now()) @map("created_at")
+
+  user   User  @relation("user_notifications", fields: [userId], references: [id], onDelete: Cascade)
+  sender User? @relation("sender_notifications", fields: [senderId], references: [id], onDelete: Cascade)
+  post   Post? @relation(fields: [postId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("notifications")
 }

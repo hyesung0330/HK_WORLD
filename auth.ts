@@ -79,6 +79,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 token.sub = user.id;
                 token.level = (user as any).level || 1;
                 token.xp = (user as any).xp || 0;
+                token.points = (user as any).points || 0;
                 token.role = (user as any).role || "JUNIOR";
                 token.github = (user as any).githubUrl || (user as any).github || null;
                 token.bio = (user as any).bio || null;
@@ -89,6 +90,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 if (session.user?.bio) token.bio = session.user.bio;
                 if (session.user?.xp !== undefined) token.xp = session.user.xp;
                 if (session.user?.level !== undefined) token.level = session.user.level;
+                if (session.user?.points !== undefined) token.points = session.user.points;
             }
             return token;
         },
@@ -97,6 +99,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 session.user.id = token.sub;
                 (session.user as any).level = token.level as number;
                 (session.user as any).xp = token.xp as number;
+                (session.user as any).points = token.points as number;
                 (session.user as any).role = token.role as string;
                 (session.user as any).github = token.github as string;
                 (session.user as any).bio = token.bio as string;

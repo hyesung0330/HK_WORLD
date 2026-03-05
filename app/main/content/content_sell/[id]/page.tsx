@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import { useParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { useTheme } from "@/app/context/darkmood";
 import MainHeader from "@/components/header/main_header";
 
@@ -11,24 +12,37 @@ import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import CommentSection from "@/components/comment/CommentSection";
-import { LuHeart } from "react-icons/lu";
+import { Loading } from "@/components/ui/loading";
+import { BackButton } from "@/components/ui/back-button";
+import { Heart, UserPlus, UserCheck } from "lucide-react";
+import { toast } from "sonner";
 
 // --- 메인 상세 페이지 컴포넌트 ---
 export default function PostDetailPage() {
     const { id } = useParams();
     const router = useRouter();
     const { darkMode } = useTheme();
+    const { data: session } = useSession();
     const [mounted, setMounted] = useState(false);
     const [post, setPost] = useState<any>(null);
     const [loading, setLoading] = useState(true);
     const [isLiked, setIsLiked] = useState(false);
     const [likeCount, setLikeCount] = useState(0);
+    const [isFollowing, setIsFollowing] = useState(false);
+    const [followLoading, setFollowLoading] = useState(false);
 
     useEffect(() => {
         setMounted(true);
         if (id) {
             fetchPost();
-            incrementView();
+
+            // 페이지 진입 시 한 번만 실행되도록 보장
+            const hasIncremented = sessionStorage.getItem(`viewed_${id}`);
+            if (!hasIncremented) {
+                incrementView();
+                sessionStorage.setItem(`viewed_${id}`, 'true');
+            }
+
             checkLikeStatus();
         }
     }, [id]);
@@ -40,6 +54,7 @@ export default function PostDetailPage() {
                 const data = await res.json();
                 setPost(data);
                 setLikeCount(data._count?.likes || 0);
+                setIsFollowing(data.isFollowing);
             }
         } catch (error) {
             console.error("Error fetching post:", error);
@@ -81,14 +96,36 @@ export default function PostDetailPage() {
         }
     };
 
+    const handleToggleFollow = async () => {
+        if (!session) {
+            toast.error("로그인이 필요한 기능입니다.");
+            return;
+        }
+        if (session.user?.id === String(post.authorId)) {
+            toast.error("자신은 팔로우할 수 없습니다.");
+            return;
+        }
+
+        setFollowLoading(true);
+        try {
+            const res = await fetch(`/api/user/${post.authorId}/follow`, { method: "POST" });
+            if (res.ok) {
+                const data = await res.json();
+                setIsFollowing(data.isFollowing);
+                toast.success(data.message);
+            }
+        } catch (error) {
+            console.error("Error toggling follow:", error);
+            toast.error("팔로우 처리 중 오류가 발생했습니다.");
+        } finally {
+            setFollowLoading(false);
+        }
+    };
+
     if (!mounted) return null;
 
     if (loading) {
-        return (
-            <div className={`min-h-screen flex items-center justify-center ${darkMode ? 'bg-[#0a0a0a] text-white' : 'bg-slate-50 text-slate-900'}`}>
-                <div className="animate-pulse font-black uppercase tracking-[0.3em] opacity-40">Loading Content...</div>
-            </div>
-        );
+        return <Loading fullScreen />;
     }
 
     if (!post) {
@@ -114,20 +151,11 @@ export default function PostDetailPage() {
             <MainHeader />
 
             <main className="max-w-3xl mx-auto px-4 md:px-6 pt-24 md:pt-32 pb-20">
-                {/* 상단 액션바 (아이콘 없이 텍스트로) */}
-                <div className="flex items-center justify-between mb-10 md:mb-16">
-                    <button
-                        onClick={() => router.back()}
-                        className="group flex items-center gap-2 opacity-40 hover:opacity-100 transition-all"
-                    >
-                        <span className="text-[10px] font-black uppercase tracking-[0.3em] group-hover:-translate-x-1 transition-transform">← BACK</span>
-                    </button>
-                    <button className="text-[10px] font-black uppercase tracking-[0.3em] opacity-40 hover:opacity-100  underline underline-offset-4">SHARE</button>
-                </div>
+                <BackButton />
 
                 {/* 포스트 헤더 */}
                 <header className="space-y-6 md:space-y-8 mb-10 md:mb-16">
-                    <Badge className="bg-blue-600 hover:bg-blue-600 text-white font-black  rounded-md px-4 py-1 border-none shadow-none text-[10px] tracking-widest uppercase">
+                    <Badge className="bg-indigo-600 hover:bg-indigo-600 text-white font-black  rounded-md px-4 py-1 border-none shadow-none text-[10px] tracking-widest uppercase">
                         {post.postType}
                     </Badge>
                     <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-tight break-keep  uppercase">
@@ -137,7 +165,29 @@ export default function PostDetailPage() {
                     <div className="flex items-center justify-between pt-6 border-t border-white/5">
                         <div className="flex items-center gap-4">
                             <div className="flex flex-col">
-                                <span className="text-sm font-black  uppercase tracking-tight leading-none mb-1">{post.author?.name || "익명"}</span>
+                                <div className="flex items-center gap-2 mb-1">
+                                    <span onClick={() => router.push(`/user/${post.author?.id}`)} className="text-sm font-black  uppercase tracking-tight leading-none cursor-pointer hover:underline">{post.author?.name || "익명"}</span>
+                                    {post.author?.role && (
+                                        <Badge variant="secondary" className="rounded-full px-2 py-0 text-[8px] font-semibold bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
+                                            {post.author.role === "JUNIOR" ? "주니어" :
+                                                post.author.role === "SENIOR" ? "시니어" :
+                                                    post.author.role === "PRO" ? "프로" :
+                                                        post.author.role === "PROFESSIONAL" ? "전문" : "에디터"}
+                                        </Badge>
+                                    )}
+                                    {session?.user?.id !== String(post.authorId) && (
+                                        <button 
+                                            onClick={handleToggleFollow}
+                                            disabled={followLoading}
+                                            className={`ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full transition-all
+                                                ${isFollowing 
+                                                    ? 'bg-zinc-200 text-zinc-600 dark:bg-white/10 dark:text-zinc-400' 
+                                                    : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                                        >
+                                            {isFollowing ? '팔로잉' : '팔로우'}
+                                        </button>
+                                    )}
+                                </div>
                                 <span className="text-[10px] font-bold opacity-30 tracking-[0.2em]">{formattedDate}</span>
                             </div>
                         </div>
@@ -175,7 +225,7 @@ export default function PostDetailPage() {
                         ${isLiked 
                             ? 'bg-red-500 border-red-500 text-white hover:bg-red-600' 
                             : darkMode ? 'border-white/10 hover:bg-white hover:text-black' : 'border-slate-900 hover:bg-black hover:text-white'}`}>
-                        <LuHeart className={isLiked ? "fill-current" : ""} />
+                        <Heart className={isLiked ? "fill-current" : ""} />
                         LIKE {likeCount}
                     </button>
                 </div>

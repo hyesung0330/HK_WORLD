@@ -32,6 +32,7 @@ export async function GET(
           select: {
             name: true,
             image: true,
+            role: true,
           },
         },
         replies: {
@@ -40,6 +41,7 @@ export async function GET(
               select: {
                 name: true,
                 image: true,
+                role: true,
               },
             },
           },
@@ -107,10 +109,38 @@ export async function POST(
           select: {
             name: true,
             image: true,
+            role: true,
           },
         },
       },
     });
+
+    // 알림 생성 로직 추가
+    try {
+        const post = await prisma.post.findUnique({ where: { id: postId }, select: { authorId: true } });
+        const senderId = session?.user?.id ? parseInt(session.user.id) : null;
+
+        if (parentId) {
+            // 대댓글인 경우: 원댓글 작성자에게 알림 (본인이 아닐 때만)
+            const parentComment = await prisma.comment.findUnique({ where: { id: parseInt(parentId) }, select: { authorId: true } });
+            if (parentComment && parentComment.authorId && parentComment.authorId !== senderId) {
+                await prisma.$executeRaw`
+                    INSERT INTO notifications (user_id, sender_id, post_id, type, is_read, created_at)
+                    VALUES (${parentComment.authorId}, ${senderId}, ${postId}, 'COMMENT', false, NOW())
+                `;
+            }
+        } else {
+            // 일반 댓글인 경우: 게시글 작성자에게 알림 (본인이 아닐 때만)
+            if (post && post.authorId !== senderId) {
+                await prisma.$executeRaw`
+                    INSERT INTO notifications (user_id, sender_id, post_id, type, is_read, created_at)
+                    VALUES (${post.authorId}, ${senderId}, ${postId}, 'COMMENT', false, NOW())
+                `;
+            }
+        }
+    } catch (notifyError) {
+        console.error("COMMENT_NOTIFICATION_ERROR:", notifyError);
+    }
 
     return NextResponse.json(newComment, { status: 201 });
   } catch (error) {

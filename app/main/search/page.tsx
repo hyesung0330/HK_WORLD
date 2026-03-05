@@ -4,8 +4,10 @@ import React, { useState, useEffect, Suspense } from 'react';
 import { useSearchParams, useRouter } from "next/navigation";
 import { useTheme } from "@/app/context/darkmood";
 import MainHeader from "@/components/header/main_header";
-import { ArrowUpRight, MessageSquare, Eye, Heart, Search } from "lucide-react";
+import { Loading } from "@/components/ui/loading";
 import { motion } from "framer-motion";
+import {ArrowUpRight, Eye, Heart, MessageSquare, Search} from "lucide-react";
+import { BackButton } from "@/components/ui/back-button";
 
 function SearchResultsContent() {
     const { darkMode } = useTheme();
@@ -69,6 +71,7 @@ function SearchResultsContent() {
             <MainHeader />
 
             <main className="pt-24 md:pt-40 pb-20 md:pb-32 max-w-6xl mx-auto px-4 md:px-8">
+                <BackButton />
                 <header className="relative mb-16 md:mb-24">
                     <motion.div
                         initial={{ opacity: 0 }}
@@ -99,7 +102,9 @@ function SearchResultsContent() {
 
                 <div className="flex flex-col gap-0 bg-transparent">
                     {loading ? (
-                        <div className="py-40 text-center animate-pulse tracking-[0.3em] font-black opacity-20 uppercase">Searching...</div>
+                        <div className="py-40 flex justify-center items-center">
+                            <Loading message="검색 결과를 가져오고 있습니다" />
+                        </div>
                     ) : posts.length === 0 ? (
                         <div className="py-40 text-center space-y-6">
                             <div className="text-4xl font-black opacity-10 uppercase  tracking-widest">No Results Found</div>
@@ -185,7 +190,7 @@ function SearchResultsContent() {
 
 export default function SearchPage() {
     return (
-        <Suspense fallback={<div>Loading...</div>}>
+        <Suspense fallback={<Loading fullScreen message="검색 페이지를 준비 중입니다" />}>
             <SearchResultsContent />
         </Suspense>
     );

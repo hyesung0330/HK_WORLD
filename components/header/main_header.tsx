@@ -3,13 +3,15 @@
 import React from 'react';
 import { useRouter, usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { IoPartlySunny } from "react-icons/io5";
+import { LogOut, Menu, Sun, Moon, Pencil, Home, Award, FileText, CalendarCheck, Gamepad2, Trophy } from "lucide-react";
 import { useTheme } from "@/app/context/darkmood";
-import {SearchDialog} from "@/components/dialog/mainSearchDialog/page";
+import { SearchDialog } from "@/components/dialog/mainSearchDialog/page";
 import ProfileSheet from "@/components/sheet/profileSheet/page";
-import LoginDialog from "@/components/dialog/AuthDialog/page";
+import NotificationBell from "@/components/notification/NotificationBell";
 import AuthDialog from "@/components/dialog/AuthDialog/page";
-import {Tabs, TabsList, TabsTrigger} from "@/components/ui/tabs";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { signOut } from "next-auth/react";
 
 export default function Header() {
     const router = useRouter();
@@ -18,8 +20,12 @@ export default function Header() {
     const { darkMode, toggleDarkMode } = useTheme();
 
     const tabs = [
-        { value: "home", label: "홈", path: "/" },
-        { value: "community", label: "컬럼보기", path: "/main/content/content_comunity" },
+        { value: "home", label: "홈", path: "/", icon: Home },
+        { value: "community", label: "컬럼보기", path: "/main/content/content_comunity", icon: FileText },
+        { value: "guide", label: "가이드", path: "/main/guide", icon: Award },
+        { value: "attendance", label: "출석체크", path: "/main/attendance", icon: CalendarCheck },
+        { value: "game", label: "게임", path: "/main/game", icon: Gamepad2 },
+        { value: "ranking", label: "랭킹", path: "/main/ranking", icon: Trophy },
     ];
 
     const isWritePage = pathname.includes('/write');
@@ -27,46 +33,26 @@ export default function Header() {
     const isAuthenticated = !!session;
 
     return (
-        <nav className={`fixed top-0 w-full flex items-center justify-between px-4 md:px-8 py-3 md:py-4 border-b z-50 transition-colors max-h-[88px]
-            ${darkMode ? 'bg-[#0a0a0a]/80 border-white/10' : 'bg-white/80 border-slate-200'} backdrop-blur-xl`}>
+        <nav className={`fixed top-0 w-full flex items-center justify-between px-4 md:px-8 py-3 md:py-4 border-b z-50 transition-colors
+            ${darkMode ? 'bg-[#0a0a0a]/80 border-white/10 text-white' : 'bg-white/80 border-slate-200'} backdrop-blur-xl`}>
 
-            {/* --- Left: Logo --- */}
-            <div className="flex items-center gap-3 md:gap-8">
-                <div className="cursor-pointer shrink-0" onClick={() => router.push('/')}>
-                    <img
-                        src={darkMode ? "/image/Logo/MainLogo/Textra_Logo_v1_black2.png" : "/image/Logo/MainLogo/Textra_Logo_v1.png "}
-                        alt="Textra Logo"
-                        className={darkMode ? "w-14 md:w-18 h-10 md:h-14" : "w-14 md:w-18 h-10 md:h-15"}
-                    />
+            {/* --- Left: Logo & Desktop Tabs --- */}
+            <div className="flex items-center gap-8">
+                <div className="cursor-pointer" onClick={() => router.push('/')}>
+                    {/*<img*/}
+                    {/*    src={darkMode ? "/image/Logo/MainLogo/Textra_Logo_v1_black2.png" : "/image/Logo/MainLogo/Textra_Logo_v1.png"}*/}
+                    {/*    alt="Textra Logo"*/}
+                    {/*    className="w-12 md:w-18 h-8 md:h-14 object-contain"*/}
+                    {/*/>*/}
+                    <span className={"font-semibold"}>Textra</span>
                 </div>
-                {/* 글쓰기 페이지가 아닐 때만 메뉴 표시 */}
+
                 {!isWritePage && (
-                    <div className="hidden lg:flex">
-                        <Tabs value={activeTab} className="w-full">
-                            <TabsList className="flex w-full justify-start gap-10 bg-transparent p-0 dark:border-white/5">
+                    <div className="hidden md:flex">
+                        <Tabs value={activeTab}>
+                            <TabsList className="bg-transparent gap-10 font-bold">
                                 {tabs.map((tab) => (
-                                    <TabsTrigger
-                                        key={tab.value}
-                                        value={tab.value}
-                                        onClick={() => router.push(tab.path)}
-                                        className="
-                                          relative h-8 px-0
-                                          text-[15px] font-medium tracking-tight
-                                          text-gray-400 transition-all duration-200
-
-                                          /* 호버 시 텍스트만 살짝 진하게 */
-                                          hover:text-gray-900 dark:hover:text-gray-200
-
-                                          /* 활성화 상태: 텍스트를 검정(흰색)으로, 아래에 굵은 선 */
-                                          data-[state=active]:text-black dark:data-[state=active]:text-white
-                                          data-[state=active]:font-bold
-
-                                          /* 활성 표시 바: 심플한 직선 */
-                                          after:absolute after:bottom-[-1px] after:left-0 after:h-[2px] after:w-full
-                                          after:bg-black dark:after:bg-white
-                                          after:opacity-0 data-[state=active]:after:opacity-100
-                                        "
-                                    >
+                                    <TabsTrigger key={tab.value} value={tab.value} onClick={() => router.push(tab.path)}>
                                         {tab.label}
                                     </TabsTrigger>
                                 ))}
@@ -76,65 +62,110 @@ export default function Header() {
                 )}
             </div>
 
-            {/* --- Center: Search Bar (글쓰기 페이지에서는 숨김) --- */}
-            {!isWritePage ? (
-                <div className="flex-1 max-w-md mx-8 hidden md:block">
-                    <div className="relative group">
-                        <SearchDialog />
-                    </div>
-                </div>
-            ) : (
-                <div className="flex-1 flex justify-center">
-                    <span className="text-[10px] font-bold opacity-40 uppercase tracking-widest animate-pulse">
-                        작성 모드: 자동 저장 중
-                    </span>
-                </div>
-            )}
-
-            {/* --- Right: Actions & Profile --- */}
+            {/* --- Right Actions --- */}
             <div className="flex items-center gap-2 md:gap-4">
-                <button
-                    onClick={toggleDarkMode}
-                    className={`w-9 h-9 md:w-10 md:h-10 flex items-center justify-center rounded-full border transition-all
-                        ${darkMode ? 'border-white/10 hover:bg-white/5' : 'border-slate-200 hover:bg-slate-100'}`}
-                >
-                    {darkMode ? <IoPartlySunny size={18}/> : <IoPartlySunny size={18} className="text-black"/>}
-                </button>
+                <SearchDialog />
+                <div className="md:hidden">
+                    {isAuthenticated && <NotificationBell />}
+                </div>
 
-                <div className="h-4 w-[1px] bg-current opacity-10 mx-0 md:mx-1"></div>
+                {/* --- MOBILE SIDE MENU (Right to Left) --- */}
+                {!isWritePage && (
+                    <div className="md:hidden">
+                        <Sheet>
+                            <SheetTrigger asChild>
+                                <button className="p-2 hover:bg-slate-100 dark:hover:bg-white/5 rounded-md transition-all">
+                                    <Menu size={28} />
+                                </button>
+                            </SheetTrigger>
+                            {/* side="right" 설정으로 오른쪽에서 왼쪽으로 열림 */}
+                            <SheetContent side="right" className={`${darkMode ? 'bg-[#0a0a0a] border-white/10' : 'bg-white'} w-[300px] p-0 flex flex-col`}>
 
-                {isWritePage ? (
-                    <button 
-                        onClick={() => {
-                            const publishButton = document.querySelector('button[data-publish-trigger="true"]') as HTMLButtonElement;
-                            if (publishButton) publishButton.click();
-                        }}
-                        className={`px-4 md:px-6 py-1.5 md:py-2 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all shadow-lg
-                        ${darkMode ? 'bg-white text-black hover:bg-gray-200' : 'bg-blue-600 text-white hover:bg-blue-700'}`}>
-                        발행하기
-                    </button>
-                ) : (
-                    <>
-                        {!isAuthenticated && (
-                            <div className="scale-90 md:scale-100 origin-right">
-                                <AuthDialog/>
-                            </div>
-                        )}
-                        {isAuthenticated && (
-                            <button
-                                onClick={() => router.push('/main/write')}
-                                className={`px-4 md:px-5 py-1.5 md:py-2 rounded-full text-[9px] md:text-[10px] font-black uppercase tracking-widest transition-all shadow-lg
-                                    ${darkMode ? 'bg-white text-black hover:bg-gray-200 shadow-white/5' : 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-900/10'}`}
-                            >
-                                글쓰기
-                            </button>
-                        )}
-                    </>
+                                {/* 1. 사용자 정보 영역 (최상단) */}
+                                <div className={`p-8 border-b ${darkMode ? 'border-white/5' : 'border-slate-100'}`}>
+                                    {isAuthenticated ? (
+                                        <div className="flex items-center gap-4">
+                                            {/* 아이콘 중앙 정렬을 위한 flex 추가 */}
+                                            <div className="w-12 h-12 rounded-full border border-zinc-200 dark:border-white/10 overflow-hidden flex items-center justify-center shrink-0">
+                                                <ProfileSheet />
+                                            </div>
+                                            <div className="flex flex-col min-w-0">
+                                                <span className="font-bold text-lg truncate">{session.user?.name || "사용자"}</span>
+                                                <span className="text-xs opacity-50 truncate">{session.user?.email}</span>
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        <div className="flex flex-col gap-3">
+                                            <p className="text-sm opacity-60">로그인이 필요합니다.</p>
+                                            <div className="w-full origin-left scale-110">
+                                                <AuthDialog />
+                                            </div>
+                                        </div>
+                                    )}
+                                </div>
+
+                                {/* 2. 메뉴 리스트 */}
+                                <div className="flex flex-col py-4 flex-1">
+                                    {tabs.map((tab) => (
+                                        <button
+                                            key={tab.value}
+                                            onClick={() => router.push(tab.path)}
+                                            className={`flex items-center gap-4 px-8 py-5 text-[16px] font-semibold transition-colors
+                                                ${pathname === tab.path ? 'bg-indigo-500/10 text-indigo-500' : 'hover:bg-slate-50 dark:hover:bg-white/5'}`}
+                                        >
+                                            <tab.icon size={22} />
+                                            {tab.label}
+                                        </button>
+                                    ))}
+
+                                    <div className={`h-[1px] my-2 ${darkMode ? 'bg-white/5' : 'bg-slate-50'}`} />
+
+                                    {/* 다크모드 조절 */}
+                                    <button onClick={toggleDarkMode} className="flex items-center gap-4 px-8 py-5 text-[16px] font-semibold hover:bg-slate-50 dark:hover:bg-white/5">
+                                        {darkMode ? <Sun size={22} /> : <Moon size={22} />}
+                                        {darkMode ? "Light Mode" : "Dark Mode"}
+                                    </button>
+
+                                    {/* 글쓰기 버튼 (로그인 시에만) */}
+                                    {isAuthenticated && (
+                                        <button onClick={() => router.push('/main/write')} className="flex items-center gap-4 px-8 py-5 text-[16px] font-bold  hover:bg-indigo-500/5">
+                                            <Pencil size={22} />
+                                            글쓰기
+                                        </button>
+                                    )}
+                                </div>
+
+                                {/* 3. 하단 로그아웃 (로그인 시에만) */}
+                                {isAuthenticated && (
+                                    <div className="p-6 mt-auto border-t dark:border-white/5">
+                                        <button
+                                            onClick={() => signOut()}
+                                            className="flex items-center gap-2 text-sm opacity-50 hover:opacity-100 transition-opacity"
+                                        >
+                                            <LogOut size={18} />
+                                            로그아웃
+                                        </button>
+                                    </div>
+                                )}
+                            </SheetContent>
+                        </Sheet>
+                    </div>
                 )}
 
-                <div className="flex items-center justify-center">
-                    <div className={`w-9 h-9 md:w-10 md:h-10 rounded-full overflow-hidden border cursor-pointer transition-all hover:scale-105 active:scale-95 flex items-center justify-center
-                        ${darkMode ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-50'}`}>
+                {/* --- Desktop Actions (변경 없음) --- */}
+                <div className="hidden md:flex items-center gap-4">
+                    {isAuthenticated && <NotificationBell />}
+                    <button onClick={toggleDarkMode} className="p-2 rounded-full border border-slate-200 dark:border-white/10">
+                        {darkMode ? <Sun size={18} /> : <Moon size={18} />}
+                    </button>
+                    {isAuthenticated ? (
+                        <button onClick={() => router.push('/main/write')} className="px-5 py-2 bg-slate-900 text-white dark:bg-white dark:text-black rounded-full text-[10px] font-black uppercase tracking-widest transition-all">
+                            글쓰기
+                        </button>
+                    ) : (
+                        <AuthDialog />
+                    )}
+                    <div className="w-9 h-9 md:w-10 md:h-10 rounded-full border overflow-hidden">
                         <ProfileSheet />
                     </div>
                 </div>

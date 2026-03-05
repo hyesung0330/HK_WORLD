@@ -4,54 +4,38 @@ import React, { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { useTheme } from "@/app/context/darkmood";
 import MainHeader from "@/components/header/main_header";
-
-// Shadcn UI
-import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
-import { AspectRatio } from "@/components/ui/aspect-ratio";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { LuPencilLine, LuHeart, LuMessageSquare, LuEye } from "react-icons/lu";
+import { BackButton } from "@/components/ui/back-button";
+import {
+    Pagination,
+    PaginationContent,
+    PaginationItem,
+    PaginationLink,
+    PaginationNext,
+    PaginationPrevious
+} from "@/components/ui/pagination";
+import { LuPencilLine, LuArrowRight, LuEye, LuClock } from "react-icons/lu";
+import { motion, AnimatePresence } from "framer-motion";
+import { Loading } from "@/components/ui/loading";
 
-// 더미 데이터 (이미지 포함)
-const MOCK_POSTS = Array.from({ length: 40 }, (_, i) => ({
-    id: 40 - i,
-    title: i % 3 === 0 ? "벤토 그리드 레이아웃의 마법" : "Next.js 15와 다크모드 구현하기",
-    category: ["개발", "디자인", "인공지능", "일상"][Math.floor(Math.random() * 4)],
-    author: "Hwangking",
-    date: "2026.02.25",
-    description: "정보를 구획화하여 시각적으로 정돈된 느낌을 주는 벤토 그리드 디자인에 대해 알아봅니다.",
-    image: `https://picsum.photos/seed/${i + 10}/600/400`,
-    avatar: "https://github.com/shadcn.png",
-    likes: Math.floor(Math.random() * 100),
-    comments: Math.floor(Math.random() * 20),
-    views: "1.2k"
-}));
-
-export default function CommunityFeedPage() {
+export default function ColumnsPage() {
     const { darkMode } = useTheme();
     const router = useRouter();
     const [mounted, setMounted] = useState(false);
     const [posts, setPosts] = useState<any[]>([]);
     const [loading, setLoading] = useState(true);
-    const TAGS = ["전체", "IT", "연애", "주식", "정부지원"] as const;
-    const [selectedTag, setSelectedTag] = useState<typeof TAGS[number]>("전체");
-
-    // 페이지네이션
     const [currentPage, setCurrentPage] = useState(1);
-    const postsPerPage = 12; // 4열 배수
+    const postsPerPage = 8;
+    const totalPages = Math.ceil(posts.length / postsPerPage);
 
     useEffect(() => {
         setMounted(true);
-        fetchPosts(selectedTag);
-    }, [selectedTag]);
+        fetchPosts();
+    }, []);
 
-    const fetchPosts = async (tag?: string) => {
+    const fetchPosts = async () => {
         try {
-            const query = new URLSearchParams({ type: "TECHNICAL" });
-            if (tag && tag !== "전체") query.set("tag", tag);
-            const res = await fetch(`/api/posts?${query.toString()}`);
+            const res = await fetch("/api/posts?type=TECHNICAL");
             if (res.ok) {
                 const data = await res.json();
                 setPosts(data);
@@ -65,157 +49,145 @@ export default function CommunityFeedPage() {
 
     if (!mounted) return null;
 
-    const totalPages = Math.ceil(posts.length / postsPerPage);
     const currentPosts = posts.slice((currentPage - 1) * postsPerPage, currentPage * postsPerPage);
 
-    const postTypeLabels = {
-        TECHNICAL: "컬럼",
-        COLUMN: "전문 칼럼",
-        PIECE: "단편/에세이"
-    };
-
     return (
-        <div className={`min-h-screen transition-colors duration-500 font-sans
-            ${darkMode ? 'bg-[#0a0a0a] text-white' : 'bg-slate-50 text-slate-900'}`}>
+        <div className={`min-h-screen transition-all duration-700 selection:bg-indigo-500 selection:text-white
+        ${darkMode ? 'bg-[#050505] text-white' : 'bg-[#f8f9fa] text-slate-900'}`}>
 
             <MainHeader />
 
-            <main className="max-w-[1400px] mx-auto px-4 md:px-6 pt-24 md:pt-32 pb-20">
-                {/* 헤더 섹션 */}
-                <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10 md:mb-16">
-                    <div>
-                        <h2 className="text-5xl md:text-7xl font-black tracking-tighter uppercase leading-none mb-4">
-                            Column
-                        </h2>
-                        <p className={`text-sm font-bold tracking-tight ${darkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
-                            당신의 이야기를 들려주세요
-                        </p>
-                    </div>
-
-                    {/* 태그 필터 */}
-                    <div className="flex items-center gap-2">
-                        {TAGS.map(tag => (
-                            <button
-                                key={tag}
-                                onClick={() => setSelectedTag(tag)}
-                                className={`px-3 py-1 rounded-full text-[10px] font-black tracking-widest border transition-colors ${
-                                    selectedTag === tag
-                                        ? 'bg-blue-600 text-white border-blue-600'
-                                        : (darkMode ? 'border-white/10 hover:bg-white/5' : 'border-slate-200 hover:bg-slate-100')
-                                }`}
-                            >
-                                {tag}
-                            </button>
-                        ))}
-                    </div>
+            <main className="max-w-5xl mx-auto px-6 pt-32 pb-32">
+                <div className="mb-16">
+                    <BackButton />
                 </div>
 
-                {loading ? (
-                    <div className="text-center py-20 opacity-40 font-black uppercase tracking-widest">컬럼을 불러오고 있어요.</div>
-                ) : posts.length === 0 ? (
-                    <div className="text-center py-20 opacity-40 font-black uppercase tracking-widest">작성된 글이 없습니다.</div>
-                ) : (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-                        {currentPosts.map((post) => (
-                            <Card
-                                key={post.id}
-                                onClick={() => router.push(`/main/content/content_comunity/${post.id}`)}
-                                className={`group cursor-pointer border-none overflow-hidden transition-all duration-500 hover:-translate-y-2
-                                    ${darkMode ? 'bg-[#121212] hover:bg-[#181818]' : 'bg-white shadow-xl shadow-slate-200/50'}`}
-                            >
-                                {/* 카드 이미지 영역 */}
-                                <div className="relative overflow-hidden">
-                                    <AspectRatio ratio={16 / 10}>
-                                        <img
-                                            src={post.image || `https://picsum.photos/seed/${post.id}/600/400`}
-                                            alt={post.title}
-                                            className="object-cover w-full h-full transition-transform duration-700 group-hover:scale-110 opacity-80 group-hover:opacity-100"
-                                        />
-                                    </AspectRatio>
-                                    <div className="absolute top-4 left-4">
-                                        <Badge className="bg-blue-600/90 backdrop-blur-md border-none font-black  text-[10px]">
-                                            {postTypeLabels[post.postType as keyof typeof postTypeLabels] || post.postType}
-                                        </Badge>
-                                    </div>
-                                </div>
-
-                                <CardHeader className="p-5 pb-2">
-                                    <div className="flex items-center gap-2 mb-3">
-                                        <Avatar className="w-5 h-5 border border-white/10">
-                                            <AvatarImage src={post.author?.image} />
-                                            <AvatarFallback>HK</AvatarFallback>
-                                        </Avatar>
-                                        <span className="text-[10px] font-black  opacity-40 uppercase tracking-tighter">
-                                            {post.author?.name || "익명"}
-                                        </span >
-                                    </div>
-                                    <h3 className="text-lg font-black leading-tight tracking-tighter group-hover:text-blue-500 transition-colors line-clamp-2">
-                                        {post.title}
-                                    </h3>
-                                </CardHeader>
-
-                                <CardContent className="px-5 pb-4">
-                                    <p className={`text-xs leading-relaxed line-clamp-2 font-medium ${darkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
-                                        {post.summary}
-                                    </p>
-                                </CardContent>
-
-                                <CardFooter className={`px-5 py-4 border-t flex items-center justify-between
-                                    ${darkMode ? 'border-white/5' : 'border-slate-50'}`}>
-                                    <div className="flex items-center gap-3 opacity-40">
-                                        <div className="flex items-center gap-1">
-                                            <LuHeart size={14} />
-                                            <span className="text-[10px] font-bold">{post.likes || 0}</span>
-                                        </div>
-                                        <div className="flex items-center gap-1">
-                                            <LuMessageSquare size={14} />
-                                            <span className="text-[10px] font-bold">{post._count?.comments || 0}</span>
-                                        </div>
-                                    </div>
-                                    <div className="flex items-center gap-1 opacity-20">
-                                        <LuEye size={14} />
-                                        <span className="text-[10px] font-bold">{post.views || 0}</span>
-                                    </div>
-                                </CardFooter>
-                            </Card>
-                        ))}
+                {/* --- 헤더 섹션: 압도적인 타이포그래피 --- */}
+                <header className="mb-24 flex flex-col md:flex-row justify-between items-start md:items-end gap-10">
+                    <div className="relative">
+                        <motion.span
+                            initial={{ opacity: 0, y: 10 }}
+                            animate={{ opacity: 0.4, y: 0 }}
+                            className="text-[10px] font-black tracking-[0.5em] uppercase mb-4 block"
+                        >
+                            모두의 정보
+                        </motion.span>
+                        <h2 className="text-7xl md:text-9xl font-[950] tracking-tighter leading-[0.8] uppercase">
+                            COL<br/>UMNS<span className="text-indigo-600">.</span>
+                        </h2>
                     </div>
-                )}
 
-                {/* 페이지네이션 */}
-                <div className="mt-20">
+                    <div className="flex flex-col items-start md:items-end gap-6">
+                        <p className={`max-w-[280px] text-sm font-medium leading-relaxed md:text-right break-keep ${darkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
+                            생각의 단편들이 모여 깊은 통찰이 되는 공간, <span className={darkMode ? 'text-white' : 'text-black'}>Textra Columns</span>입니다.
+                        </p>
+                        <Button
+                            onClick={() => router.push('/main/write')}
+                            className="group h-14 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-black px-8 gap-3 shadow-xl shadow-indigo-500/20"
+                        >
+                            <LuPencilLine size={20} />
+                            컬럼 쓰기
+                        </Button>
+                    </div>
+                </header>
+
+                {/* --- 게시글 리스트: 카드형 리스트 --- */}
+                <div className="flex flex-col gap-1 border-t border-b border-current/5 min-h-[400px]">
+                    {loading ? (
+                        <div className="py-40 flex justify-center items-center">
+                            <Loading message="콘텐츠를 불러오는 중입니다" />
+                        </div>
+                    ) : posts.length === 0 ? (
+                        <div className="py-40 text-center opacity-20 font-black uppercase tracking-widest">
+                            등록된 게시글이 없습니다.
+                        </div>
+                    ) : (
+                        <AnimatePresence mode="wait">
+                            {currentPosts.map((post, index) => (
+                                <motion.div
+                                    key={post.id}
+                                    initial={{ opacity: 0, y: 20 }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    transition={{ delay: index * 0.05 }}
+                                    onClick={() => router.push(`/main/content/content_comunity/${post.id}`)}
+                                    className={`group relative py-10 px-4 md:px-8 flex flex-col md:flex-row md:items-center justify-between gap-6 cursor-pointer border-b last:border-none transition-all duration-500
+                                    ${darkMode ? 'border-white/5 hover:bg-white/[0.02]' : 'border-black/5 hover:bg-black/[0.01]'}`}
+                                >
+                                    {/* 좌측: 메타 정보 및 타이틀 */}
+                                    <div className="flex-1 space-y-4">
+                                        <div className="flex items-center gap-4">
+                                            <span className="font-mono text-[10px] opacity-30 group-hover:text-indigo-500 group-hover:opacity-100 transition-all">
+                                                #{String(post.id).padStart(2, '0')}
+                                            </span>
+                                            <span className={`text-[10px] font-black tracking-widest px-2 py-0.5 rounded ${darkMode ? 'bg-white/5 text-zinc-400' : 'bg-black/5 text-slate-500'}`}>
+                                                {post.postType}
+                                            </span>
+                                        </div>
+                                        <h3 className="text-xl md:text-3xl font-bold tracking-tight group-hover:translate-x-2 transition-transform duration-500 break-keep leading-tight">
+                                            {post.title}
+                                        </h3>
+                                    </div>
+
+                                    {/* 우측: 작성자 정보 및 통계 */}
+                                    <div className="flex items-center justify-between md:justify-end gap-10">
+                                        <div className="flex flex-col md:items-end gap-1">
+                                            <span className="text-xs font-black uppercase tracking-tighter">{post.author?.name || "익명"}</span>
+                                            <div className="flex items-center gap-3 opacity-30 text-[10px] font-bold">
+                                                <span className="flex items-center gap-1"><LuEye size={12}/> {post.views}</span>
+                                                <span className="flex items-center gap-1"><LuClock size={12}/> {new Date(post.createdAt).toLocaleDateString()}</span>
+                                            </div>
+                                        </div>
+                                        <div className="w-12 h-12 rounded-full border border-current/10 flex items-center justify-center group-hover:bg-indigo-600 group-hover:border-indigo-600 group-hover:text-white transition-all duration-500">
+                                            <LuArrowRight size={20} className="-rotate-45 group-hover:rotate-0 transition-transform duration-500" />
+                                        </div>
+                                    </div>
+
+                                    {/* 호버 시 배경 강조 효과 */}
+                                    <motion.div
+                                        className="absolute inset-0 bg-indigo-600/0 group-hover:bg-indigo-600/[0.02] transition-colors pointer-events-none"
+                                        layoutId="hoverBg"
+                                    />
+                                </motion.div>
+                            ))}
+                        </AnimatePresence>
+                    )}
+                </div>
+
+                {/* --- 페이지네이션: 미니멀 스타일 --- */}
+                <div className="mt-24">
                     <Pagination>
-                        <PaginationContent>
+                        <PaginationContent className="gap-4">
                             <PaginationItem>
                                 <PaginationPrevious
-                                    onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                                    className={`cursor-pointer ${currentPage === 1 && 'opacity-20 pointer-events-none'}`}
+                                    onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                                    className={`h-14 w-14 rounded-full border border-current/10 hover:bg-current hover:text-white transition-all
+                                    ${currentPage === 1 && 'opacity-10 pointer-events-none'}`}
                                 />
                             </PaginationItem>
 
-                            {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
-                                <PaginationItem key={p}>
-                                    <PaginationLink
-                                        isActive={currentPage === p}
-                                        onClick={() => setCurrentPage(p)}
-                                        className={`rounded-full w-10 h-10 font-black cursor-pointer border-none
-                                            ${currentPage === p ? 'bg-gray-300 text-white' : 'hover:bg-gray-600'}`}
-                                    >
-                                        {p}
-                                    </PaginationLink>
-                                </PaginationItem>
-                            ))}
+                            <div className="flex items-center gap-2 px-4">
+                                <span className="text-sm font-black text-indigo-600">{currentPage}</span>
+                                <span className="text-[10px] font-bold opacity-20">/</span>
+                                <span className="text-sm font-black opacity-30">{totalPages}</span>
+                            </div>
 
                             <PaginationItem>
                                 <PaginationNext
-                                    onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                                    className={`cursor-pointer ${currentPage === totalPages && 'opacity-20 pointer-events-none'}`}
+                                    onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                                    className={`h-14 w-14 rounded-full border border-current/10 hover:bg-current hover:text-white transition-all
+                                    ${currentPage === totalPages && 'opacity-10 pointer-events-none'}`}
                                 />
                             </PaginationItem>
                         </PaginationContent>
                     </Pagination>
                 </div>
             </main>
+
+            <footer className="pb-20 text-center">
+                <p className="text-[10px] font-black tracking-[0.6em] opacity-10 uppercase">
+                    Designed by Textra Studio 2026
+                </p>
+            </footer>
         </div>
     );
 }

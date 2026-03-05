@@ -10,23 +10,53 @@ export const XP_RULES = {
         SILVER: 20000,
         BRONZE: 10000,
     },
+    ATTENDANCE: {
+        DAILY: 100,
+        BONUS_3: 200,
+        BONUS_5: 300,
+        BONUS_7: 500,
+        BONUS_14: 700,
+        BONUS_30: 1000,
+    }
 };
 
-export function calculateLevel(totalXp: number): number {
-    let level = 1;
-    let requiredXp = 100;
-    let currentTotalXp = totalXp;
+export const POINT_RULES = {
+    AWARD: {
+        GOLD: 4000,
+        SILVER: 1400,
+        BRONZE: 700,
+    },
+};
 
-    while (currentTotalXp >= requiredXp) {
-        currentTotalXp -= requiredXp;
+/**
+ * 누적 XP를 바탕으로 레벨 계산
+ */
+export function calculateLevel(totalXp: number): {
+    level: number,
+    currentLevelProgress: number,
+    nextLevelRequiredXp: number
+} {
+    let level = 1;
+    let remainingXp = Math.floor(totalXp);
+    let requiredXpForNext = 100;
+
+    while (remainingXp >= requiredXpForNext) {
+        remainingXp -= requiredXpForNext;
         level++;
-        requiredXp = level * 100;
-        // Prevent infinite loop or too high level if needed, but 100 increment is safe
-        if (level >= 100) break; 
+        requiredXpForNext = level * 100;
+        if (level >= 100) break;
     }
-    return level;
+
+    return {
+        level,
+        currentLevelProgress: remainingXp,
+        nextLevelRequiredXp: requiredXpForNext
+    };
 }
 
+/**
+ * 유저의 활동 통계를 바탕으로 레벨과 역할 업데이트
+ */
 export async function updateUserStats(userId: number) {
     const user = await prisma.user.findUnique({
         where: { id: userId },
@@ -39,74 +69,62 @@ export async function updateUserStats(userId: number) {
                 }
             },
             awardsReceived: true,
+            _count: {
+                select: { followers: true }
+            }
         }
     });
 
     if (!user) return;
 
-    // Calculate total stats
+    // 1. 통계 집계
     const totalLikes = user.posts.reduce((sum, post) => sum + post._count.likes, 0);
     const totalViews = user.posts.reduce((sum, post) => sum + post.views, 0);
-    
+    const totalFollowers = user._count.followers;
+
     const bronzeAwards = user.awardsReceived.filter(a => a.type === BestEditorType.BRONZE).length;
     const silverAwards = user.awardsReceived.filter(a => a.type === BestEditorType.SILVER).length;
     const goldAwards = user.awardsReceived.filter(a => a.type === BestEditorType.GOLD).length;
 
-    const level = calculateLevel(user.xp);
+    // 2. 레벨 계산
+    const { level } = calculateLevel(user.xp);
     let newRole = UserRole.JUNIOR;
 
-    if (level >= 50) {
-        const cond1 = totalLikes >= 100 && totalViews >= 10000;
-        const cond2 = bronzeAwards >= 100 || silverAwards >= 50 || goldAwards >= 10;
-        if (cond1 || cond2) {
-            newRole = UserRole.PROFESSIONAL;
-        } else {
-            newRole = UserRole.PRO; // Stay at PRO if level 50 but conditions not met?
-            // Actually requirement says Professional Editor is level 50.
-            // "전문 에디터 등업 조건... 전문 에디터 (레벨 50)"
-            // This might mean you need level 50 AND conditions.
-        }
-    } else if (level >= 31) {
-        const cond1 = totalLikes >= 100 && totalViews >= 2000;
-        const cond2 = bronzeAwards >= 10 || silverAwards >= 5 || goldAwards >= 1;
-        if (cond1 || cond2) {
-            newRole = UserRole.PRO;
-        } else {
-            newRole = UserRole.SENIOR;
-        }
-    } else if (level >= 11) {
-        const cond1 = totalLikes >= 10 && totalViews >= 30;
-        const cond2 = bronzeAwards >= 1;
-        if (cond1 || cond2) {
-            newRole = UserRole.SENIOR;
-        } else {
-            newRole = UserRole.JUNIOR;
-        }
-    }
+    // 3. 역할(Role) 결정 로직 (최신 가이드 조건 반영)
 
-    // Special case: if level is high but doesn't meet role requirements, 
-    // we might need to cap the role.
-    // The requirement says: 
-    // Junior (1-10)
-    // Senior (11-30)
-    // Pro (31-49)
-    // Professional (50)
-    
-    // Let's refine role based on level first, then check conditions for "upgrading"
-    
+    // [Professional] 전문 에디터 조건 (Lv.50 + 올라운더 조건)
     if (level >= 50) {
-        const cond = (totalLikes >= 100 && totalViews >= 10000) || bronzeAwards >= 100 || silverAwards >= 50 || goldAwards >= 10;
-        newRole = cond ? UserRole.PROFESSIONAL : UserRole.PRO;
-    } else if (level >= 31) {
-        const cond = (totalLikes >= 100 && totalViews >= 2000) || bronzeAwards >= 10 || silverAwards >= 5 || goldAwards >= 1;
-        newRole = cond ? UserRole.PRO : UserRole.SENIOR;
-    } else if (level >= 11) {
-        const cond = (totalLikes >= 10 && totalViews >= 30) || bronzeAwards >= 1;
-        newRole = cond ? UserRole.SENIOR : UserRole.JUNIOR;
-    } else {
+        const meetsProfessionalCond =
+            totalLikes >= 1000 &&
+            totalViews >= 10000 &&
+            goldAwards >= 10 &&
+            silverAwards >= 10 && // 기존 50개에서 10개로 하향 조정 반영
+            totalFollowers >= 100;
+
+        newRole = meetsProfessionalCond ? UserRole.PROFESSIONAL : UserRole.PRO;
+    }
+    // [Pro] 프로 에디터 조건 (Lv.31 + 수익 창출 시작 조건)
+    else if (level >= 31) {
+        const meetsProCond =
+            totalLikes >= 50 &&
+            totalViews >= 2000 &&
+            silverAwards >= 5 &&
+            goldAwards >= 1 &&
+            totalFollowers >= 10;
+
+        newRole = meetsProCond ? UserRole.PRO : UserRole.SENIOR;
+    }
+    // [Senior] 시니어 에디터 조건 (Lv.11 + 메달 또는 순수 활동량)
+    else if (level >= 11) {
+        const meetsSeniorCond = bronzeAwards >= 1 || totalLikes >= 30;
+
+        newRole = meetsSeniorCond ? UserRole.SENIOR : UserRole.JUNIOR;
+    }
+    else {
         newRole = UserRole.JUNIOR;
     }
 
+    // 4. DB 업데이트
     await prisma.user.update({
         where: { id: userId },
         data: {
@@ -116,6 +134,9 @@ export async function updateUserStats(userId: number) {
     });
 }
 
+/**
+ * 경험치 추가 및 통계 갱신
+ */
 export async function addXp(userId: number, xpAmount: number) {
     await prisma.user.update({
         where: { id: userId },
@@ -124,4 +145,16 @@ export async function addXp(userId: number, xpAmount: number) {
         }
     });
     await updateUserStats(userId);
+}
+
+/**
+ * 포인트 추가
+ */
+export async function addPoints(userId: number, pointAmount: number) {
+    await prisma.user.update({
+        where: { id: userId },
+        data: {
+            points: { increment: pointAmount }
+        }
+    });
 }
