@@ -146,7 +146,7 @@ export default function CommunityPage() {
                         {sequences.map((_, i) => (
                             <div
                                 key={i}
-                                className={`h-1 transition-all duration-500 rounded-full ${i === index ? 'w-8 bg-indigo-500' : 'w-2 bg-gray-600 opacity-30'}`}
+                                className={`h-1 transition-all duration-500 rounded-full ${i === index ? `w-8 ${darkMode ? 'bg-white' : 'bg-zinc-900'}` : 'w-2 bg-gray-600 opacity-30'}`}
                             />
                         ))}
                     </div>
@@ -154,9 +154,9 @@ export default function CommunityPage() {
 
                 <nav className={`flex justify-between items-center mb-0 md:mb-12 py-4 md:py-6 transition-colors border-b ${darkMode ? 'border-white/5' : 'border-slate-100'}`}>
                     <div className="flex gap-6 md:gap-10 text-sm md:text-base font-black">
-                        <button className="relative group text-indigo-500">
+                        <button className={`relative group ${darkMode ? 'text-white' : 'text-zinc-900'}`}>
                             최근 컬럼
-                            <span className="absolute -bottom-6 left-0 w-full h-0.5 bg-indigo-500" />
+                            <span className={`absolute -bottom-6 left-0 w-full h-0.5 ${darkMode ? 'bg-white' : 'bg-zinc-900'}`} />
                         </button>
                     </div>
                     <div className="text-[11px] font-bold opacity-40 uppercase tracking-tighter">
@@ -190,14 +190,14 @@ export default function CommunityPage() {
                         {post.author?.name || "익명"}
                     </span>
                                     <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-[4px] tracking-tighter uppercase ml-1
-                        ${darkMode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                        ${darkMode ? 'bg-white/10 text-white' : 'bg-zinc-100 text-zinc-900'}`}>
                         {post.postType}
                     </span>
                                 </div>
 
                                 <div className="flex flex-col md:flex-row gap-4 md:gap-8 justify-between">
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="text-xl md:text-3xl font-bold tracking-tight mb-2 md:mb-3 group-hover:text-indigo-500 transition-colors leading-snug break-keep">
+                                        <h3 className="text-xl md:text-3xl font-bold tracking-tight mb-2 md:mb-3 group-hover:opacity-70 transition-colors leading-snug break-keep">
                                             {post.title}
                                         </h3>
                                         <p className={`text-[14px] md:text-[15px] leading-relaxed line-clamp-2 mb-4 md:mb-6 max-w-2xl break-keep ${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>
@@ -208,8 +208,8 @@ export default function CommunityPage() {
                                     <div className="shrink-0">
                                         <div className={`relative w-full md:w-48 h-40 md:h-32 rounded-2xl overflow-hidden border transition-transform duration-500 group-hover:scale-[1.02]
                             ${darkMode ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-100'}`}>
-                                            {post.thumbnail ? (
-                                                <img src={post.thumbnail} alt={post.title} className="w-full h-full object-cover" />
+                                            {post.coverImage ? (
+                                                <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover" />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center opacity-10">
                                                     <span className="text-[10px] font-black ">NO IMAGE</span>
@@ -221,7 +221,7 @@ export default function CommunityPage() {
 
                                 <div className="flex items-center gap-4 md:gap-6 mt-6 text-[10px] md:text-[11px] font-bold opacity-40 uppercase tracking-widest">
                                     <div className="flex items-center gap-3 md:gap-4">
-                                        <div className="flex items-center gap-1.5 hover:text-red-500 transition-colors">
+                                        <div className="flex items-center gap-1.5 hover:text-rose-600 transition-colors">
                                             <Heart size={14} /> {post._count?.likes || 0}
                                         </div>
                                         <div className="flex items-center gap-1.5">

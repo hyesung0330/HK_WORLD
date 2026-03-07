@@ -77,14 +77,14 @@ function SearchResultsContent() {
                         initial={{ opacity: 0 }}
                         animate={{ opacity: [0.1, 0.2, 0.1] }}
                         transition={{ duration: 5, repeat: Infinity, ease: "easeInOut" }}
-                        className="absolute -top-20 -left-10 w-64 h-64 bg-indigo-600/10 rounded-full blur-[120px]"
+                        className={`absolute -top-20 -left-10 w-64 h-64 ${darkMode ? 'bg-white/5' : 'bg-black/5'} rounded-full blur-[120px]`}
                     />
 
                     <div className="space-y-4">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className="flex items-center gap-4 text-indigo-500 font-black uppercase tracking-[0.4em] text-xs"
+                            className={`flex items-center gap-4 ${darkMode ? 'text-white' : 'text-zinc-900'} font-black uppercase tracking-[0.4em] text-xs`}
                         >
                             <Search size={14} />
                             검색결과
@@ -131,14 +131,14 @@ function SearchResultsContent() {
                                         {post.author?.name || "익명"}
                                     </span>
                                     <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-[4px] tracking-tighter uppercase ml-1
-                                        ${darkMode ? 'bg-indigo-500/20 text-indigo-400' : 'bg-indigo-50 text-indigo-600'}`}>
+                                        ${darkMode ? 'bg-white/10 text-white' : 'bg-zinc-100 text-zinc-900'}`}>
                                         {post.postType}
                                     </span>
                                 </div>
 
                                 <div className="flex flex-col md:flex-row gap-4 md:gap-8 justify-between">
                                     <div className="flex-1 min-w-0">
-                                        <h3 className="text-xl md:text-3xl font-bold tracking-tight mb-2 md:mb-3 group-hover:text-indigo-500 transition-colors leading-snug break-keep">
+                                        <h3 className="text-xl md:text-3xl font-bold tracking-tight mb-2 md:mb-3 group-hover:opacity-70 transition-colors leading-snug break-keep">
                                             {post.title}
                                         </h3>
                                         <p className={`text-[14px] md:text-[15px] leading-relaxed line-clamp-2 mb-4 md:mb-6 max-w-2xl break-keep ${darkMode ? 'text-gray-400' : 'text-slate-500'}`}>
@@ -149,8 +149,8 @@ function SearchResultsContent() {
                                     <div className="shrink-0">
                                         <div className={`relative w-full md:w-48 h-40 md:h-32 rounded-2xl overflow-hidden border transition-transform duration-500 group-hover:scale-[1.02]
                                             ${darkMode ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-100'}`}>
-                                            {post.thumbnail ? (
-                                                <img src={post.thumbnail} alt={post.title} className="w-full h-full object-cover" />
+                                            {post.coverImage ? (
+                                                <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover" />
                                             ) : (
                                                 <div className="w-full h-full flex items-center justify-center opacity-10">
                                                     <span className="text-[10px] font-black ">NO IMAGE</span>
@@ -162,7 +162,7 @@ function SearchResultsContent() {
 
                                 <div className="flex items-center gap-4 md:gap-6 mt-6 text-[10px] md:text-[11px] font-bold opacity-40 uppercase tracking-widest">
                                     <div className="flex items-center gap-3 md:gap-4">
-                                        <div className="flex items-center gap-1.5 hover:text-red-500 transition-colors">
+                                        <div className="flex items-center gap-1.5 hover:text-rose-600 transition-colors">
                                             <Heart size={14} /> {post._count?.likes || 0}
                                         </div>
                                         <div className="flex items-center gap-1.5">

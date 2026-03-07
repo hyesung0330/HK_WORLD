@@ -164,8 +164,7 @@ export default function AttendancePage() {
                 {/* --- Hero Section --- */}
                 <section className="mb-12 md:mb-16 text-center">
                     <motion.div {...fadeInUp}>
-                        <div className="inline-block px-4 py-1.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] md:text-[11px] font-black mb-6 uppercase tracking-widest">
-                           Textra 출석체크
+                        <div className="inline-block px-4 py-1.5 rounded-full bg-emerald-500/10 text-emerald-500 text-[10px] md:text-[11px] font-black mb-6 uppercase tracking-widest">출석체크
                         </div>
                         <h1 className="text-4xl md:text-6xl font-[950] tracking-tighter leading-tight mb-6">
                             매일 쌓이는 <span className="text-emerald-500"><br/>성장</span>의 습관
@@ -341,22 +340,22 @@ export default function AttendancePage() {
                 </section>
 
                 {/* --- Info Section --- */}
-                <section className="text-center pt-16 border-t border-white/5">
-                    <div className="flex items-center justify-center gap-8 md:gap-16 opacity-30">
-                        <div className="flex flex-col items-center gap-2">
-                            <Sparkles size={24} />
-                            <span className="text-[10px] font-black uppercase tracking-widest">실시간 반영</span>
-                        </div>
-                        <div className="flex flex-col items-center gap-2">
-                            <Zap size={24} />
-                            <span className="text-[10px] font-black uppercase tracking-widest">성장 가속화</span>
-                        </div>
-                        <div className="flex flex-col items-center gap-2">
-                            <Calendar size={24} />
-                            <span className="text-[10px] font-black uppercase tracking-widest">자동 초기화</span>
-                        </div>
-                    </div>
-                </section>
+                {/*<section className="text-center pt-16 border-t border-white/5">*/}
+                {/*    <div className="flex items-center justify-center gap-8 md:gap-16 opacity-30">*/}
+                {/*        <div className="flex flex-col items-center gap-2">*/}
+                {/*            <Sparkles size={24} />*/}
+                {/*            <span className="text-[10px] font-black uppercase tracking-widest">실시간 반영</span>*/}
+                {/*        </div>*/}
+                {/*        <div className="flex flex-col items-center gap-2">*/}
+                {/*            <Zap size={24} />*/}
+                {/*            <span className="text-[10px] font-black uppercase tracking-widest">성장 가속화</span>*/}
+                {/*        </div>*/}
+                {/*        <div className="flex flex-col items-center gap-2">*/}
+                {/*            <Calendar size={24} />*/}
+                {/*            <span className="text-[10px] font-black uppercase tracking-widest">자동 초기화</span>*/}
+                {/*        </div>*/}
+                {/*    </div>*/}
+                {/*</section>*/}
             </main>
         </div>
     );

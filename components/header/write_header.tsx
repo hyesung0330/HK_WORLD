@@ -7,6 +7,7 @@ import { FaSearch } from "react-icons/fa";
 import { useTheme } from "@/app/context/darkmood";
 import ProfileSheet from "@/components/sheet/profileSheet/page";
 import { useSession } from "next-auth/react";
+import { toast } from "sonner";
 
 type WriteModeHeaderProps = {
     postData?: {
@@ -129,6 +130,7 @@ export default function WriteModeHeader({ postData, onPreview }: WriteModeHeader
                                     });
                                     if (res.ok) {
                                         const data = await res.json();
+                                        toast.success("정상적으로 등록되었습니다");
                                         router.push(`/main/content/content_comunity/${data.post.id}`);
                                     } else {
                                         const err = await res.json().catch(() => ({}));

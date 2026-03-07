@@ -8,6 +8,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/co
 import { useSession } from "next-auth/react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import Editor from "@/components/editor/Editor";
 
 export default function TrendyWritePage() {
     const { darkMode } = useTheme();
@@ -59,7 +60,7 @@ export default function TrendyWritePage() {
             <div className="lg:hidden fixed bottom-8 right-8 z-50">
                 <Sheet>
                     <SheetTrigger asChild>
-                        <button className="w-14 h-14 bg-indigo-600 text-white rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
+                        <button className="w-14 h-14 bg-zinc-900 dark:bg-white text-white dark:text-black rounded-full shadow-2xl flex items-center justify-center hover:scale-110 active:scale-95 transition-all">
                             <LuSettings size={24} />
                         </button>
                     </SheetTrigger>
@@ -70,7 +71,7 @@ export default function TrendyWritePage() {
                                 <p className="text-lg font-black opacity-100  mb-4">태그</p>
                                 <div className={`flex flex-wrap gap-2 p-3 border rounded-2xl transition-all ${darkMode ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-white'}`}>
                                     {tags.map((tag, index) => (
-                                        <Badge key={index} className="bg-indigo-500 hover:bg-indigo-600 text-white border-none gap-1 py-1">
+                                        <Badge key={index} className="bg-zinc-100 dark:bg-white/10 text-zinc-900 dark:text-white border-none gap-1 py-1">
                                             #{tag}
                                             <LuX size={12} className="cursor-pointer" onClick={() => removeTag(index)} />
                                         </Badge>
@@ -103,6 +104,32 @@ export default function TrendyWritePage() {
 
             <div className="flex pt-[60px] md:pt-[65px] h-[calc(100vh-60px)] md:h-[calc(100vh-65px)]">
 
+                {/* --- 숨겨진 파일 입력 (모바일/데스크톱 공용) --- */}
+                <input 
+                    type="file" 
+                    className="hidden" 
+                    ref={fileInputRef} 
+                    onChange={async (e) => {
+                        const file = e.target.files?.[0];
+                        if(file) {
+                            const formData = new FormData();
+                            formData.append('file', file);
+                            try {
+                                const response = await fetch('/api/upload', {
+                                    method: 'POST',
+                                    body: formData,
+                                });
+                                const data = await response.json();
+                                if (data.url) {
+                                    setCoverImage(data.url);
+                                }
+                            } catch (error) {
+                                console.error('Cover image upload failed', error);
+                            }
+                        }
+                    }} 
+                />
+
                 {/* --- 좌측 다이나믹 사이드바 --- */}
                 <aside className={`w-80 border-r p-10 hidden lg:block overflow-y-auto transition-colors
                     ${darkMode ? 'border-white/10' : 'border-slate-200'}`}>
@@ -111,9 +138,9 @@ export default function TrendyWritePage() {
                         {/* 태그 입력 */}
                         <section>
                             <h4 className="text-[10px] font-black opacity-40 uppercase tracking-[0.2em] mb-4">태그</h4>
-                            <div className={`flex flex-wrap gap-2 p-4 border rounded-[24px] transition-all ${darkMode ? 'border-white/10 bg-white/5 focus-within:border-indigo-500/50' : 'border-slate-200 bg-white focus-within:border-indigo-500/50'}`}>
+                            <div className={`flex flex-wrap gap-2 p-4 border rounded-[24px] transition-all ${darkMode ? 'border-white/10 bg-white/5 focus-within:border-white/30' : 'border-slate-200 bg-white focus-within:border-slate-400'}`}>
                                 {tags.map((tag, index) => (
-                                    <Badge key={index} className="bg-indigo-500 hover:bg-indigo-600 text-white border-none gap-1 py-1.5 px-3">
+                                    <Badge key={index} className="bg-zinc-100 dark:bg-white/10 text-zinc-900 dark:text-white border-none gap-1 py-1.5 px-3">
                                         #{tag}
                                         <LuX size={12} className="cursor-pointer opacity-60 hover:opacity-100" onClick={() => removeTag(index)} />
                                     </Badge>
@@ -142,14 +169,6 @@ export default function TrendyWritePage() {
                                 ) : (
                                     <LuPlus className="opacity-20" size={24}/>
                                 )}
-                                <input type="file" className="hidden" ref={fileInputRef} onChange={(e) => {
-                                    const file = e.target.files?.[0];
-                                    if(file) {
-                                        const reader = new FileReader();
-                                        reader.onloadend = () => setCoverImage(reader.result as string);
-                                        reader.readAsDataURL(file);
-                                    }
-                                }} />
                             </div>
                         </section>
                     </div>
@@ -166,19 +185,14 @@ export default function TrendyWritePage() {
                             onChange={handleTitleChange}
                             placeholder="제목을 입력하세요"
                             className={`w-full bg-transparent text-4xl md:text-6xl font-black tracking-tighter focus:outline-none resize-none leading-tight mb-8 md:mb-10 uppercase
-                                ${darkMode ? 'placeholder:text-white/5 text-white' : 'placeholder:text-slate-200 text-slate-900'}`}
+                                ${darkMode ? 'placeholder:text-white/5 text-white' : 'placeholder:text-slate-300 text-slate-900'}`}
                         />
 
                         {/* 본문 영역 */}
-                        <textarea
-                            value={content}
-                            onChange={(e) => setContent(e.target.value)}
-                            placeholder={
-                            "당신의 이야기를 적어주세요."
-
-                            }
-                            className={`w-full min-h-[400px] md:min-h-[500px] bg-transparent text-lg md:text-xl leading-relaxed focus:outline-none resize-none font-medium
-                                ${darkMode ? 'text-zinc-400 placeholder:text-white/5' : 'text-slate-600 placeholder:text-slate-200'}`}
+                        <Editor
+                            content={content}
+                            onChange={setContent}
+                            darkMode={darkMode}
                         />
                     </div>
                 </main>
@@ -207,7 +221,7 @@ export default function TrendyWritePage() {
 
                             {/* [수정 부분] 첫 번째 태그를 강조 배지로 표시 */}
                             {tags.length > 0 ? (
-                                <Badge className="bg-indigo-500 text-white font-base rounded-lg px-4 py-1 border-none text-[10px]">
+                                <Badge className="bg-zinc-900 dark:bg-white text-white dark:text-black font-base rounded-lg px-4 py-1 border-none text-[10px]">
                                     #{tags[0]}
                                 </Badge>
                             ) : (
@@ -258,10 +272,11 @@ export default function TrendyWritePage() {
                         )}
 
                         {/* 본문 기사 */}
-                        <div className={`text-xl md:text-2xl leading-relaxed font-medium mb-24 whitespace-pre-wrap
-                ${darkMode ? 'text-zinc-400' : 'text-slate-600'}`}>
-                            {content || "내용을 입력해 주세요."}
-                        </div>
+                        <div
+                            className={`text-xl md:text-2xl leading-relaxed font-medium mb-24 prose prose-xl max-w-none
+                                ${darkMode ? 'prose-invert text-zinc-400' : 'text-slate-600'}`}
+                            dangerouslySetInnerHTML={{ __html: content || "내용을 입력해 주세요." }}
+                        />
                     </main>
                 </div>
             )}

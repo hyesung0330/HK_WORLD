@@ -75,7 +75,7 @@ export default function NotificationBell() {
     const getNotificationIcon = (type: string) => {
         switch (type) {
             case "FOLLOW": return <UserPlus size={16} className="text-blue-500" />;
-            case "LIKE": return <Heart size={16} className="text-rose-500 fill-rose-500" />;
+            case "LIKE": return <Heart size={16} className="text-rose-600/80 fill-rose-600/80" />;
             case "COMMENT": return <MessageSquare size={16} className="text-emerald-500" />;
             case "AWARD": return <Trophy size={16} className="text-amber-500" />;
             default: return <Info size={16} className="text-indigo-500" />;

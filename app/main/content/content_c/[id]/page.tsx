@@ -155,7 +155,7 @@ export default function PostDetailPage() {
 
                 {/* 포스트 헤더 */}
                 <header className="space-y-6 md:space-y-8 mb-10 md:mb-16">
-                    <Badge className="bg-indigo-600 hover:bg-indigo-600 text-white font-black  rounded-md px-4 py-1 border-none shadow-none text-[10px] tracking-widest uppercase">
+                    <Badge className="bg-zinc-900 dark:bg-white text-white dark:text-black font-black  rounded-md px-4 py-1 border-none shadow-none text-[10px] tracking-widest uppercase">
                         {post.postType}
                     </Badge>
                     <h1 className="text-5xl md:text-8xl font-black tracking-tighter leading-tight break-keep  uppercase">
@@ -168,7 +168,7 @@ export default function PostDetailPage() {
                                 <div className="flex items-center gap-2 mb-1">
                                     <span onClick={() => router.push(`/user/${post.author?.id}`)} className="text-sm font-black  uppercase tracking-tight leading-none cursor-pointer hover:underline">{post.author?.name || "익명"}</span>
                                     {post.author?.role && (
-                                        <Badge variant="secondary" className="rounded-full px-2 py-0 text-[8px] font-semibold bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
+                                        <Badge variant="secondary" className="rounded-full px-2 py-0 text-[8px] font-semibold bg-zinc-100 text-zinc-600 dark:bg-white/10 dark:text-zinc-400">
                                             {post.author.role === "JUNIOR" ? "주니어" :
                                                 post.author.role === "SENIOR" ? "시니어" :
                                                     post.author.role === "PRO" ? "프로" :
@@ -182,7 +182,7 @@ export default function PostDetailPage() {
                                             className={`ml-2 text-[10px] font-bold px-2 py-0.5 rounded-full transition-all
                                                 ${isFollowing 
                                                     ? 'bg-zinc-200 text-zinc-600 dark:bg-white/10 dark:text-zinc-400' 
-                                                    : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
+                                                    : 'bg-zinc-900 text-white dark:bg-white dark:text-black hover:opacity-80'}`}
                                         >
                                             {isFollowing ? '팔로잉' : '팔로우'}
                                         </button>
@@ -200,13 +200,20 @@ export default function PostDetailPage() {
                     {post.tags && post.tags.length > 0 && (
                         <div className="flex flex-wrap gap-2 pt-4">
                             {post.tags.map((pt: any) => (
-                                <span key={pt.tag.id} className="text-xs font-bold text-indigo-500 bg-indigo-500/10 px-3 py-1 rounded-full">
+                                <span key={pt.tag.id} className="text-xs font-bold text-zinc-500 bg-zinc-100 dark:bg-white/5 px-3 py-1 rounded-full">
                                     #{pt.tag.name}
                                 </span>
                             ))}
                         </div>
                     )}
                 </header>
+
+                {/* 대표 이미지 (등록된 경우) */}
+                {post.coverImage && (
+                    <div className={`mb-16 rounded-[32px] overflow-hidden border ${darkMode ? 'border-white/5' : 'border-slate-200'}`}>
+                        <img src={post.coverImage} className="w-full h-auto object-cover max-h-[600px]" alt={post.title} />
+                    </div>
+                )}
 
                 {/* 본문 기사 */}
                 <article className={`text-xl md:text-2xl leading-relaxed font-medium mb-24
@@ -221,10 +228,12 @@ export default function PostDetailPage() {
                     ${darkMode ? 'border-white/5' : 'border-slate-200'}`}>
                     <button 
                         onClick={handleToggleLike}
-                        className={`px-12 py-6 border-2 rounded-full font-black  tracking-[0.3em] transition-all shadow-none flex items-center gap-3
+                        className={`px-12 py-6 border-2 rounded-full font-black tracking-[0.3em] transition-all shadow-none flex items-center gap-3
                         ${isLiked 
-                            ? 'bg-red-500 border-red-500 text-white hover:bg-red-600' 
-                            : darkMode ? 'border-white/10 hover:bg-white hover:text-black' : 'border-slate-900 hover:bg-black hover:text-white'}`}>
+                            ? (darkMode 
+                                ? 'bg-rose-500/10 border-rose-500/20 text-rose-500 hover:bg-rose-500/20' 
+                                : 'bg-rose-50 border-rose-200 text-rose-600 hover:bg-rose-100')
+                            : (darkMode ? 'border-white/10 hover:bg-white hover:text-black' : 'border-slate-900 hover:bg-black hover:text-white')}`}>
                         <Heart className={isLiked ? "fill-current" : ""} />
                         LIKE {likeCount}
                     </button>

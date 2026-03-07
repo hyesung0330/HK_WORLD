@@ -17,7 +17,9 @@ function mapModeToPostType(mode: string): "PIECE" | "COLUMN" | "TECHNICAL" {
 }
 
 function buildSummary(title: string, content: string): string {
-  const base = content?.trim() ? content.trim() : title.trim();
+  // HTML 태그 제거 로직 추가
+  const stripped = content?.replace(/<[^>]*>?/gm, ' ')?.trim();
+  const base = stripped ? stripped : title.trim();
   return base.substring(0, 180);
 }
 
@@ -75,11 +77,13 @@ export async function GET(req: Request) {
 export async function POST(req: Request) {
   try {
     const session = await auth();
+    console.log("POST_SESSION", session); // 세션 확인용 로그 추가
     if (!session || !session.user?.id) {
       return NextResponse.json({ message: "로그인이 필요합니다." }, { status: 401 });
     }
 
     const body = await req.json();
+    console.log("POST_BODY", body); // 요청 바디 확인용 로그 추가
     const { title, content, mode, link, techStack, coverImage, tags } = body as {
       title: string;
       content: string;
@@ -95,10 +99,16 @@ export async function POST(req: Request) {
     }
 
     const postType = mapModeToPostType(mode);
+    const authorId = parseInt(session.user.id);
+
+    if (isNaN(authorId)) {
+      console.error("INVALID_AUTHOR_ID", session.user.id);
+      return NextResponse.json({ message: "유효하지 않은 사용자 ID입니다." }, { status: 400 });
+    }
 
     // 프로 에디터(레벨 31+)만 COLUMN 작성 가능
     if (postType === "COLUMN") {
-      const me = await prisma.user.findUnique({ where: { id: parseInt(session.user.id) } });
+      const me = await prisma.user.findUnique({ where: { id: authorId } });
       if (!me) {
         return NextResponse.json({ message: "사용자를 찾을 수 없습니다." }, { status: 404 });
       }
@@ -120,8 +130,10 @@ export async function POST(req: Request) {
         content: composedContent,
         summary: buildSummary(title, content),
         postType,
-        authorId: parseInt(session.user.id),
-        // coverImage, link, techStack 은 스키마 확장 후 별도 컬럼으로 이동 예정
+        authorId: authorId,
+        coverImage,
+        link,
+        techStack,
         tags: tags && tags.length > 0 ? {
           create: tags.map(tagName => ({
             tag: {
@@ -149,8 +161,11 @@ export async function POST(req: Request) {
       message: "게시글이 등록되었습니다.",
       post: created,
     }, { status: 201 });
-  } catch (e) {
+  } catch (e: any) {
     console.error("POST_CREATE_ERROR", e);
-    return NextResponse.json({ message: "서버 오류가 발생했습니다." }, { status: 500 });
+    return NextResponse.json({ 
+      message: e.message || "서버 오류가 발생했습니다.",
+      error: process.env.NODE_ENV === 'development' ? e.stack : undefined
+    }, { status: 500 });
   }
 }

@@ -1,4 +1,5 @@
 @import 'tailwindcss';
+@plugin "@tailwindcss/typography";
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -124,4 +125,93 @@
   body {
     @apply bg-background text-foreground;
   }
+}
+
+/* Code Highlighting (Lowlight/Highlight.js) */
+.hljs-comment,
+.hljs-quote {
+  color: #616161;
+}
+
+.hljs-variable,
+.hljs-template-variable,
+.hljs-attribute,
+.hljs-tag,
+.hljs-name,
+.hljs-regexp,
+.hljs-link,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class {
+  color: #f9826c;
+}
+
+.hljs-number,
+.hljs-meta,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params {
+  color: #fba333;
+}
+
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+  color: #9ecbff;
+}
+
+.hljs-keyword,
+.hljs-selector-tag {
+  color: #ff7b72;
+}
+
+.hljs-emphasis {
+  font-style: italic;
+}
+
+.hljs-strong {
+  font-weight: bold;
+}
+
+.dark .hljs-comment,
+.dark .hljs-quote {
+  color: #8b949e;
+}
+
+.dark .hljs-variable,
+.dark .hljs-template-variable,
+.dark .hljs-attribute,
+.dark .hljs-tag,
+.dark .hljs-name,
+.dark .hljs-regexp,
+.dark .hljs-link,
+.dark .hljs-name,
+.dark .hljs-selector-id,
+.dark .hljs-selector-class {
+  color: #ffa198;
+}
+
+.dark .hljs-number,
+.dark .hljs-meta,
+.dark .hljs-built_in,
+.dark .hljs-builtin-name,
+.dark .hljs-literal,
+.dark .hljs-type,
+.dark .hljs-params {
+  color: #ffab70;
+}
+
+.dark .hljs-string,
+.dark .hljs-symbol,
+.dark .hljs-bullet,
+.dark .hljs-addition {
+  color: #a5d6ff;
+}
+
+.dark .hljs-keyword,
+.dark .hljs-selector-tag {
+  color: #ff7b72;
 }

@@ -182,11 +182,11 @@ export default function RankingPage() {
                         {/* --- Ranking List (4th - 20th) --- */}
                         <div className="space-y-4">
                             <div className="flex items-center justify-between px-6 mb-6">
-                                <h3 className="text-sm font-black uppercase tracking-widest flex items-center gap-2">
+                                <h3 className="text-sm font-semibold flex items-center gap-2">
                                     <TrendingUp size={16} className="opacity-40 text-indigo-500" />
                                     랭킹 리스트
                                 </h3>
-                                <span className="text-[10px] font-bold opacity-30 uppercase tracking-tighter">경험치 기반 랭킹이에요</span>
+                                <span className="text-[10px] font-bold opacity-30 uppercase tracking-tighter"></span>
                             </div>
 
                             {topUsers.slice(3).map((user, i) => (

@@ -65,13 +65,6 @@ export default function ColumnsPage() {
                 {/* --- 헤더 섹션: 압도적인 타이포그래피 --- */}
                 <header className="mb-24 flex flex-col md:flex-row justify-between items-start md:items-end gap-10">
                     <div className="relative">
-                        <motion.span
-                            initial={{ opacity: 0, y: 10 }}
-                            animate={{ opacity: 0.4, y: 0 }}
-                            className="text-[10px] font-black tracking-[0.5em] uppercase mb-4 block"
-                        >
-                            모두의 정보
-                        </motion.span>
                         <h2 className="text-7xl md:text-9xl font-[950] tracking-tighter leading-[0.8] uppercase">
                             COL<br/>UMNS<span className="text-indigo-600">.</span>
                         </h2>
@@ -131,7 +124,7 @@ export default function ColumnsPage() {
                                     {/* 우측: 작성자 정보 및 통계 */}
                                     <div className="flex items-center justify-between md:justify-end gap-10">
                                         <div className="flex flex-col md:items-end gap-1">
-                                            <span className="text-xs font-black uppercase tracking-tighter">{post.author?.name || "익명"}</span>
+                                            <span className="text-xs font-black uppercase tracking-tighter">{post.author?.name || "탈퇴회원"}</span>
                                             <div className="flex items-center gap-3 opacity-30 text-[10px] font-bold">
                                                 <span className="flex items-center gap-1"><LuEye size={12}/> {post.views}</span>
                                                 <span className="flex items-center gap-1"><LuClock size={12}/> {new Date(post.createdAt).toLocaleDateString()}</span>
@@ -184,7 +177,7 @@ export default function ColumnsPage() {
             </main>
 
             <footer className="pb-20 text-center">
-                <p className="text-[10px] font-black tracking-[0.6em] opacity-10 uppercase">
+                <p className="text-[10px] font-black opacity-80 ">
                     Designed by Textra Studio 2026
                 </p>
             </footer>

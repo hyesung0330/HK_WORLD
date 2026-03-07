@@ -139,19 +139,19 @@ export default function GuidePage() {
 
                     <div className={`p-8 md:p-10 rounded-[2.5rem] border ${darkMode ? 'border-white/5 bg-white/[0.02]' : 'bg-white border-slate-100 shadow-sm'} flex flex-col md:flex-row items-center justify-between gap-8`}>
                         <div className="space-y-4 max-w-md">
-                            <h3 className="text-2xl font-black tracking-tighter">다이노 런 (DINO RUN)</h3>
+                            <h3 className="text-2xl font-black tracking-tighter">사이버 런</h3>
                             <p className="text-sm opacity-50 leading-relaxed">
                                 장애물을 피해 최대한 멀리 달리세요! 획득한 점수는 즉시 경험치로 환산되어 여러분의 레벨업을 돕습니다.
                             </p>
                             <div className="flex items-center gap-4">
                                 <div className="flex flex-col">
                                     <span className="text-[10px] font-black opacity-30 uppercase">적립 규칙</span>
-                                    <span className="text-lg font-bold text-indigo-500">1,000점당 100 XP</span>
+                                    <span className="text-lg font-bold text-indigo-500">100점당 10 XP</span>
                                 </div>
                                 <div className="w-px h-8 bg-current opacity-10" />
                                 <div className="flex flex-col">
                                     <span className="text-[10px] font-black opacity-30 uppercase">일일 한도</span>
-                                    <span className="text-lg font-bold text-indigo-500">100,000 XP</span>
+                                    <span className="text-lg font-bold text-indigo-500">10판 / 1,000 XP</span>
                                 </div>
                             </div>
                         </div>

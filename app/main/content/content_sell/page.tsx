@@ -91,7 +91,7 @@ export default function PromotePage() {
                                 >
                                     {/* 배경 이미지 */}
                                     <img
-                                        src={post.thumbnail || `https://picsum.photos/seed/${post.id}/800/800`}
+                                        src={post.coverImage || `https://picsum.photos/seed/${post.id}/800/800`}
                                         alt={post.title}
                                         className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:scale-110 group-hover:opacity-60 transition-all duration-1000 grayscale group-hover:grayscale-0"
                                     />

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { addXp } from "@/lib/xp";
+import { prisma } from "@/lib/prisma";
 
 export async function POST(
     req: Request,
@@ -23,23 +24,83 @@ export async function POST(
             return NextResponse.json({ error: "권한이 없습니다." }, { status: 403 });
         }
 
-        const { xp } = await req.json();
+        const { xp, score } = await req.json();
 
-        // 2. XP 값 검증 (숫자인지, 음수는 아닌지, 최대치 제한 등)
+        // 2. XP 값 검증 (숫자인지, 음수는 아닌지)
         const earnedXp = Number(xp);
         if (isNaN(earnedXp) || earnedXp <= 0) {
             return NextResponse.json({ error: "유효하지 않은 XP 값입니다." }, { status: 400 });
         }
 
-        // 최대 100,000 XP 상한선 재검증 (보안 핵심)
-        const safeXp = Math.min(earnedXp, 100000);
+        // 3. 일일 한도 체크 (1000 XP & 10 games)
+        const start = new Date();
+        start.setHours(0, 0, 0, 0);
+        const end = new Date();
+        end.setHours(23, 59, 59, 999);
 
-        // 3. lib/xp.ts의 addXp를 사용하여 DB 업데이트 및 레벨/역할 갱신
+        // 오늘 플레이한 게임 횟수 조회
+        const dailyGameCount = await prisma.gameLog.count({
+            where: {
+                userId: Number(sessionUserId),
+                createdAt: {
+                    gte: start,
+                    lte: end
+                }
+            }
+        });
+
+        if (dailyGameCount >= 10) {
+            return NextResponse.json({
+                success: false,
+                message: "오늘 플레이 가능한 횟수(10판)를 모두 소진했습니다.",
+                limitReached: true
+            });
+        }
+
+        const dailyXpSum = await prisma.gameLog.aggregate({
+            where: {
+                userId: Number(sessionUserId),
+                createdAt: {
+                    gte: start,
+                    lte: end
+                }
+            },
+            _sum: {
+                xp: true
+            }
+        });
+
+        const currentDailyXp = dailyXpSum._sum.xp || 0;
+        const remainingLimit = Math.max(0, 1000 - currentDailyXp);
+
+        if (remainingLimit <= 0) {
+            return NextResponse.json({ 
+                success: false, 
+                message: "오늘 획득 가능한 게임 경험치를 모두 소진했습니다. (일일 한도 1000 XP)",
+                limitReached: true
+            });
+        }
+
+        const safeXp = Math.min(earnedXp, remainingLimit);
+
+        // 4. GameLog 저장
+        await prisma.gameLog.create({
+            data: {
+                userId: Number(sessionUserId),
+                score: Number(score) || 0,
+                xp: safeXp
+            }
+        });
+
+        // 5. lib/xp.ts의 addXp를 사용하여 DB 업데이트 및 레벨/역할 갱신
         await addXp(Number(sessionUserId), safeXp);
 
         return NextResponse.json({
             success: true,
-            message: `${safeXp} XP가 적립되었습니다.`,
+            message: `${safeXp} XP가 적립되었습니다.${safeXp < earnedXp ? " (일일 한도 적용)" : ""}`,
+            earnedXp: safeXp,
+            limitReached: safeXp < earnedXp || safeXp + currentDailyXp >= 1000 || dailyGameCount + 1 >= 10,
+            dailyGameCount: dailyGameCount + 1
         });
 
     } catch (error) {

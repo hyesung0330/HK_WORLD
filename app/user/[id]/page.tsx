@@ -15,6 +15,7 @@ import { Heart, Eye, MessageSquare, Settings, Check, X, UserPlus, UserCheck } fr
 import {calculateLevel} from "@/lib/xp";
 import { BackButton } from "@/components/ui/back-button";
 import { toast } from "sonner";
+import UserStatsChart from "@/components/user/UserStatsChart";
 
 export default function UserProfilePage() {
   const { darkMode } = useTheme();
@@ -127,14 +128,11 @@ export default function UserProfilePage() {
 
   const { level, currentLevelProgress, nextLevelRequiredXp } = useMemo(() => {
     if (!user) return { level: 1, currentLevelProgress: 0, nextLevelRequiredXp: 100 };
-
-    // API 응답 데이터(user.xp)를 숫자로 확실히 변환
     const userXp = Number(user.xp || 0);
     return calculateLevel(userXp);
   }, [user?.xp]);
 
   if (!mounted) return null;
-
   if (loading) return <Loading fullScreen />;
 
   const posts = (user?.posts || []).slice().sort((a: any, b: any) => {
@@ -147,15 +145,15 @@ export default function UserProfilePage() {
         <MainHeader />
 
         {/* 커버 영역 */}
-        <div className={`h-48 md:h-64 w-full ${darkMode ? 'bg-gradient-to-r from-zinc-800 to-zinc-900' : 'bg-gradient-to-r from-indigo-50 to-indigo-50'}`} />
-
-        <main className="max-w-4xl mx-auto px-5 pb-20 relative">
-          <div className="pt-6 md:pt-10 mb-4">
+        <div className={`h-45 md:h-64 w-full relative ${darkMode ? 'bg-gradient-to-r from-zinc-800 to-zinc-900' : 'bg-gradient-to-r from-indigo-50 to-indigo-50'}`} >
+          <div className="max-w-4xl mx-auto px-5 pt-22 relative z-10">
             <BackButton />
           </div>
-          
+        </div>
+
+        <main className="max-w-4xl mx-auto px-5 pb-20 relative">
           {/* 프로필 카드 */}
-          <div className={`p-8 rounded-[2.5rem] shadow-sm border -mt-16 md:-mt-24 relative z-10 ${darkMode ? 'bg-[#1a1a1a] border-zinc-800' : 'bg-white border-white'}`}>
+          <div className={`p-8 rounded-[2.5rem] shadow-sm border -mt-10 md:-mt-16 relative z-10 ${darkMode ? 'bg-[#1a1a1a] border-zinc-800' : 'bg-white border-white'}`}>
             <div className="flex flex-col md:flex-row items-center md:items-end gap-6">
               <Avatar className="w-32 h-32 rounded-[2rem] shadow-xl -mt-16 md:-mt-24 border-4 border-white dark:border-[#1a1a1a]">
                 <AvatarImage src={user.image} className="object-cover" />
@@ -177,7 +175,6 @@ export default function UserProfilePage() {
                       <>
                         <h1 className="text-2xl font-bold tracking-tight">{user.name}</h1>
                         <Badge variant="secondary" className="rounded-full px-3 py-0 text-[11px] font-semibold bg-indigo-50 text-indigo-600 dark:bg-indigo-900/30 dark:text-indigo-400">
-                          {/* 레벨 정보를 뱃지 텍스트에도 포함 가능 (예: LV.{level}) */}
                           {
                             user.role === "JUNIOR" ? "주니어 에디터" :
                                 user.role === "SENIOR" ? "시니어 에디터" :
@@ -186,7 +183,7 @@ export default function UserProfilePage() {
                           }
                         </Badge>
                         <div className="flex items-center gap-1.5 ml-1 px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-600 dark:text-amber-500">
-                            <span className="text-[10px] font-black tracking-tighter">{user.points?.toLocaleString() || 0}P</span>
+                          <span className="text-[10px] font-black tracking-tighter">{user.points?.toLocaleString() || 0}P</span>
                         </div>
                       </>
                   )}
@@ -222,16 +219,16 @@ export default function UserProfilePage() {
                         </Button>
                     )
                 ) : (
-                    <Button 
+                    <Button
                         onClick={handleToggleFollow}
                         disabled={followLoading}
                         className={`rounded-full px-8 font-black transition-all ${isFollowing ? 'bg-zinc-200 text-zinc-600 dark:bg-white/10 dark:text-zinc-400' : 'bg-indigo-600 text-white hover:bg-indigo-700'}`}
                     >
-                        {isFollowing ? (
-                            <><UserCheck size={18} className="mr-2" /> 팔로잉</>
-                        ) : (
-                            <><UserPlus size={18} className="mr-2" /> 팔로우</>
-                        )}
+                      {isFollowing ? (
+                          <><UserCheck size={18} className="mr-2" /> 팔로잉</>
+                      ) : (
+                          <><UserPlus size={18} className="mr-2" /> 팔로우</>
+                      )}
                     </Button>
                 )}
               </div>
@@ -248,21 +245,19 @@ export default function UserProfilePage() {
                 <span className="text-xl font-bold text-zinc-900 dark:text-zinc-100">{user._count?.posts || 0}</span>
               </div>
 
-              {/* 하단 레벨 텍스트 동기화 */}
               <div className="flex items-baseline justify-center gap-2">
                 <span className="text-xs text-zinc-400 font-medium uppercase tracking-wider">레벨</span>
-                <span className="text-xl font-bold text-indigo-500">{level}</span>
+                <span className="text-xl font-bold text-zinc-900 dark:text-zinc-100">{level}</span>
               </div>
             </div>
 
-            {/* XP 프로그래스바 동기화 */}
             <div className="mt-8 pt-6 border-t border-zinc-100 dark:border-zinc-800 space-y-3">
               <div className="flex justify-between items-center">
                 <div className="flex items-center gap-2">
                   <span className="text-[10px] font-black opacity-80">경험치</span>
                 </div>
-                <span className="text-xs font-bold text-indigo-500/80">
-                  <Badge variant="outline" className="text-[9px] h-4 px-1.5 border-indigo-500/20 text-indigo-500 font-bold mr-2">
+                <span className="text-xs font-bold text-zinc-900 dark:text-zinc-100">
+                  <Badge variant="outline" className="text-[9px] h-4 px-1.5 border-zinc-500/20 text-zinc-500 font-bold mr-2">
                     다음 레벨까지
                   </Badge>
                   {currentLevelProgress}<span className="text-[10px] opacity-40 ml-0.5">/ {nextLevelRequiredXp} XP</span>
@@ -271,20 +266,23 @@ export default function UserProfilePage() {
               <Progress value={(currentLevelProgress / nextLevelRequiredXp) * 100} className="h-2 bg-zinc-100 dark:bg-zinc-800/50" />
             </div>
 
-            {/* 포인트 및 정산 섹션 (본인 페이지인 경우에만 표시) */}
+            {isOwnPage && user?.posts && user.posts.length > 0 && (
+                <UserStatsChart posts={user.posts} darkMode={darkMode} />
+            )}
+
             {isOwnPage && (
-              <div className="mt-6 p-6 rounded-3xl bg-amber-500/5 border border-amber-500/10 flex flex-col md:flex-row items-center justify-between gap-4">
-                <div className="flex flex-col items-center md:items-start">
-                  <span className="text-[10px] font-black text-amber-600 dark:text-amber-500 uppercase tracking-widest opacity-60 mb-1">나의 정산 포인트</span>
-                  <span className="text-3xl font-black">{user.points?.toLocaleString() || 0} P</span>
+                <div className="mt-6 p-6 rounded-3xl bg-zinc-100 dark:bg-white/5 border border-zinc-200 dark:border-white/10 flex flex-col md:flex-row items-center justify-between gap-4">
+                  <div className="flex flex-col items-center md:items-start">
+                    <span className="text-[10px] font-black text-zinc-500 uppercase tracking-widest opacity-60 mb-1">나의 정산 포인트</span>
+                    <span className="text-3xl font-black">{user.points?.toLocaleString() || 0} P</span>
+                  </div>
+                  <Button
+                      onClick={() => router.push('/main/settlement')}
+                      className="w-full md:w-auto px-8 h-14 bg-zinc-900 dark:bg-white text-white dark:text-black font-black text-sm tracking-widest rounded-2xl shadow-lg transition-all"
+                  >
+                    정산 신청하기
+                  </Button>
                 </div>
-                <Button 
-                    onClick={() => router.push('/main/settlement')}
-                    className="w-full md:w-auto px-8 h-14 bg-amber-500 hover:bg-amber-600 text-white font-black text-sm tracking-widest rounded-2xl shadow-lg shadow-amber-500/20 transition-all"
-                >
-                  정산 신청하기
-                </Button>
-              </div>
             )}
           </div>
 
@@ -317,19 +315,19 @@ export default function UserProfilePage() {
                   <div className="flex justify-between items-start gap-4">
                     <div className="space-y-2">
                       <div className="flex items-center gap-2">
-                        <span className="text-[10px] font-bold text-indigo-500 uppercase tracking-widest">
+                        <span className="text-[10px] font-bold text-zinc-500 dark:text-zinc-400 uppercase tracking-widest">
                           {post.postType === 'TECHNICAL' ? '일반 컬럼' : post.postType === 'COLUMN' ? '전문 칼럼' : '단편/에세이'}
                         </span>
                         <span className="text-[10px] text-zinc-400 font-medium">{new Date(post.createdAt).toLocaleDateString()}</span>
                       </div>
-                      <h3 className="text-lg md:text-xl font-bold leading-snug group-hover:text-indigo-600 transition-colors">
+                      <h3 className="text-lg md:text-xl font-bold leading-snug group-hover:opacity-70 transition-colors">
                         {post.title}
                       </h3>
                     </div>
 
                     <div className="flex gap-4 shrink-0 mt-1">
                       <div className="flex items-center gap-1.5 text-zinc-400">
-                        <Heart size={16} className={post._count?.likes > 0 ? 'fill-rose-500 text-rose-500' : ''} />
+                        <Heart size={16} className={post._count?.likes > 0 ? 'fill-rose-600 text-rose-600 opacity-90' : ''} />
                         <span className="text-sm font-medium">{post._count?.likes || 0}</span>
                       </div>
                       <div className="flex items-center gap-1.5 text-zinc-400">

@@ -44,14 +44,13 @@ export default function GamePage() {
                 {/* --- Hero Section --- */}
                 <section className="mb-12 md:mb-16 text-center">
                     <motion.div {...fadeInUp}>
-                        <div className="inline-block px-4 py-1.5 rounded-full bg-indigo-500/10 text-indigo-500 text-[10px] md:text-[11px] font-black mb-6 uppercase tracking-widest">
-                           Textra Mini Game
+                        <div className="inline-block px-4 py-1.5 rounded-full bg-indigo-500/10 text-indigo-500 text-[10px] md:text-[11px] font-black mb-6 uppercase tracking-widest">미니 게임
                         </div>
                         <h1 className="text-4xl md:text-6xl font-[950] tracking-tighter leading-tight mb-6">
                             달리면서 <span className="text-indigo-500"><br/>성장</span>하는 즐거움
                         </h1>
                         <p className="text-sm md:text-lg font-medium opacity-50 max-w-xl mx-auto leading-relaxed">
-                            다이노 런 게임을 즐기고 점수에 따라 경험치를 획득하세요.<br className="hidden md:block"/>
+                            사이버 런 게임을 즐기고 점수에 따라 경험치를 획득하세요.<br className="hidden md:block"/>
                             1,000점당 100 XP가 적립됩니다.
                         </p>
                     </motion.div>
@@ -82,8 +81,8 @@ export default function GamePage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6">
                         {[
-                            { label: "XP 적립 규칙", xp: "100", unit: "XP", desc: "1,000점 획득 시 마다 적립" },
-                            { label: "일일 한도", xp: "100,000", unit: "XP", desc: "게임으로 획득 가능한 최대치" },
+                            { label: "XP 적립 규칙", xp: "10", unit: "XP", desc: "100점 획득 시 마다 적립" },
+                            { label: "일일 한도", xp: "1,000", unit: "XP", desc: "게임으로 획득 가능한 최대치" },
                         ].map((item, i) => (
                             <div key={i} className={`p-8 rounded-[2rem] border transition-all hover:scale-[1.02] 
                                 ${darkMode ? 'border-white/5 bg-white/[0.02]' : 'bg-white shadow-sm border-slate-100'}`}>

@@ -3,7 +3,7 @@
 import React from 'react';
 import { useRouter, usePathname } from "next/navigation";
 import { useSession } from "next-auth/react";
-import { LogOut, Menu, Sun, Moon, Pencil, Home, Award, FileText, CalendarCheck, Gamepad2, Trophy } from "lucide-react";
+import { LogOut, Menu, Sun, Moon, Pencil, Home, Award, FileText, CalendarCheck, Gamepad2, Trophy, Sparkles } from "lucide-react"; // Sparkles 아이콘 추가
 import { useTheme } from "@/app/context/darkmood";
 import { SearchDialog } from "@/components/dialog/mainSearchDialog/page";
 import ProfileSheet from "@/components/sheet/profileSheet/page";
@@ -26,6 +26,8 @@ export default function Header() {
         { value: "attendance", label: "출석체크", path: "/main/attendance", icon: CalendarCheck },
         { value: "game", label: "게임", path: "/main/game", icon: Gamepad2 },
         { value: "ranking", label: "랭킹", path: "/main/ranking", icon: Trophy },
+        { value: "Codera", label: "Codera", path: "/main/codera", icon: Sparkles, isSpecial: true }, // 경로 수정 및 특별 속성 추가
+        { value: "Logra", label: "Logra", path: "/main/Logra", icon: Sparkles, isSpecial: true }, // 경로 수정 및 특별 속성 추가
     ];
 
     const isWritePage = pathname.includes('/write');
@@ -37,23 +39,30 @@ export default function Header() {
             ${darkMode ? 'bg-[#0a0a0a]/80 border-white/10 text-white' : 'bg-white/80 border-slate-200'} backdrop-blur-xl`}>
 
             {/* --- Left: Logo & Desktop Tabs --- */}
-            <div className="flex items-center gap-8">
-                <div className="cursor-pointer" onClick={() => router.push('/')}>
-                    {/*<img*/}
-                    {/*    src={darkMode ? "/image/Logo/MainLogo/Textra_Logo_v1_black2.png" : "/image/Logo/MainLogo/Textra_Logo_v1.png"}*/}
-                    {/*    alt="Textra Logo"*/}
-                    {/*    className="w-12 md:w-18 h-8 md:h-14 object-contain"*/}
-                    {/*/>*/}
+            <div className="flex items-center gap-8 z-1000">
+                <div className="cursor-pointer z-1000" onClick={() => router.push('/')}>
                     <span className={"font-semibold"}>Textra</span>
                 </div>
 
                 {!isWritePage && (
                     <div className="hidden md:flex">
                         <Tabs value={activeTab}>
-                            <TabsList className="bg-transparent gap-10 font-bold">
+                            <TabsList className="bg-transparent gap-8 font-bold">
                                 {tabs.map((tab) => (
-                                    <TabsTrigger key={tab.value} value={tab.value} onClick={() => router.push(tab.path)}>
+                                    <TabsTrigger
+                                        key={tab.value}
+                                        value={tab.value}
+                                        onClick={() => router.push(tab.path)}
+                                        className={`relative ${tab.isSpecial ? 'text-indigo-500 dark:text-indigo-400' : ''}`}
+                                    >
                                         {tab.label}
+                                        {/* Codera 전용 하단 강조 라인 또는 포인트 */}
+                                        {tab.isSpecial && (
+                                            <span className="absolute -top-1 -right-1 flex h-2 w-2">
+                                                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-indigo-400 opacity-75"></span>
+                                                <span className="relative inline-flex rounded-full h-2 w-2 bg-indigo-500"></span>
+                                            </span>
+                                        )}
                                     </TabsTrigger>
                                 ))}
                             </TabsList>
@@ -69,7 +78,6 @@ export default function Header() {
                     {isAuthenticated && <NotificationBell />}
                 </div>
 
-                {/* --- MOBILE SIDE MENU (Right to Left) --- */}
                 {!isWritePage && (
                     <div className="md:hidden">
                         <Sheet>
@@ -78,14 +86,11 @@ export default function Header() {
                                     <Menu size={28} />
                                 </button>
                             </SheetTrigger>
-                            {/* side="right" 설정으로 오른쪽에서 왼쪽으로 열림 */}
                             <SheetContent side="right" className={`${darkMode ? 'bg-[#0a0a0a] border-white/10' : 'bg-white'} w-[300px] p-0 flex flex-col`}>
 
-                                {/* 1. 사용자 정보 영역 (최상단) */}
                                 <div className={`p-8 border-b ${darkMode ? 'border-white/5' : 'border-slate-100'}`}>
                                     {isAuthenticated ? (
                                         <div className="flex items-center gap-4">
-                                            {/* 아이콘 중앙 정렬을 위한 flex 추가 */}
                                             <div className="w-12 h-12 rounded-full border border-zinc-200 dark:border-white/10 overflow-hidden flex items-center justify-center shrink-0">
                                                 <ProfileSheet />
                                             </div>
@@ -104,29 +109,33 @@ export default function Header() {
                                     )}
                                 </div>
 
-                                {/* 2. 메뉴 리스트 */}
                                 <div className="flex flex-col py-4 flex-1">
                                     {tabs.map((tab) => (
                                         <button
                                             key={tab.value}
                                             onClick={() => router.push(tab.path)}
-                                            className={`flex items-center gap-4 px-8 py-5 text-[16px] font-semibold transition-colors
-                                                ${pathname === tab.path ? 'bg-indigo-500/10 text-indigo-500' : 'hover:bg-slate-50 dark:hover:bg-white/5'}`}
+                                            className={`flex items-center gap-4 px-8 py-5 text-[16px] font-semibold transition-colors relative
+                                                ${pathname === tab.path
+                                                ? 'bg-indigo-500/10 text-indigo-500'
+                                                : tab.isSpecial
+                                                    ? 'text-indigo-600 dark:text-indigo-400 bg-indigo-500/5' // Codera는 기본적으로 배경색 살짝 추가
+                                                    : 'hover:bg-slate-50 dark:hover:bg-white/5'}`}
                                         >
-                                            <tab.icon size={22} />
+                                            <tab.icon size={22} className={tab.isSpecial ? "animate-pulse" : ""} />
                                             {tab.label}
+                                            {tab.isSpecial && (
+                                                <span className="ml-auto bg-indigo-500 text-white text-[9px] px-2 py-0.5 rounded-full font-black uppercase">New</span>
+                                            )}
                                         </button>
                                     ))}
 
                                     <div className={`h-[1px] my-2 ${darkMode ? 'bg-white/5' : 'bg-slate-50'}`} />
 
-                                    {/* 다크모드 조절 */}
                                     <button onClick={toggleDarkMode} className="flex items-center gap-4 px-8 py-5 text-[16px] font-semibold hover:bg-slate-50 dark:hover:bg-white/5">
                                         {darkMode ? <Sun size={22} /> : <Moon size={22} />}
                                         {darkMode ? "Light Mode" : "Dark Mode"}
                                     </button>
 
-                                    {/* 글쓰기 버튼 (로그인 시에만) */}
                                     {isAuthenticated && (
                                         <button onClick={() => router.push('/main/write')} className="flex items-center gap-4 px-8 py-5 text-[16px] font-bold  hover:bg-indigo-500/5">
                                             <Pencil size={22} />
@@ -135,7 +144,6 @@ export default function Header() {
                                     )}
                                 </div>
 
-                                {/* 3. 하단 로그아웃 (로그인 시에만) */}
                                 {isAuthenticated && (
                                     <div className="p-6 mt-auto border-t dark:border-white/5">
                                         <button
@@ -152,7 +160,6 @@ export default function Header() {
                     </div>
                 )}
 
-                {/* --- Desktop Actions (변경 없음) --- */}
                 <div className="hidden md:flex items-center gap-4">
                     {isAuthenticated && <NotificationBell />}
                     <button onClick={toggleDarkMode} className="p-2 rounded-full border border-slate-200 dark:border-white/10">

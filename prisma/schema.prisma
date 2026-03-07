@@ -30,6 +30,8 @@ model User {
   consecutiveDays Int      @default(0) @map("consecutive_days")
   lastAttendanceDate DateTime? @map("last_attendance_date")
 
+  coderaUsageCount Int      @default(0) @map("codera_usage_count")
+
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
 
@@ -48,6 +50,7 @@ model User {
   postViews      PostView[]
   settlementRequests SettlementRequest[]
   attendances    Attendance[]
+  gameLogs       GameLog[]
   notifications  Notification[] @relation("user_notifications")
   sentNotifications Notification[] @relation("sender_notifications")
 
@@ -188,6 +191,9 @@ model Post {
   postType PostType @default(PIECE) @map("post_type")
   views    Int      @default(0)
   readTime Int?     @map("read_time") // 예상 읽기 시간 (분)
+  coverImage  String?  @map("cover_image")
+  link        String?
+  techStack   String?  @map("tech_stack")
 
   // Author & Series
   authorId Int  @map("author_id")
@@ -275,6 +281,8 @@ model Like {
   user User? @relation(fields: [userId], references: [id], onDelete: Cascade)
   post Post  @relation(fields: [postId], references: [id], onDelete: Cascade)
 
+  createdAt DateTime @default(now()) @map("created_at")
+
   @@unique([userId, postId])
   @@unique([anonymousId, postId])
   @@map("likes")
@@ -343,4 +351,17 @@ model Notification {
 
   @@index([userId])
   @@map("notifications")
+}
+
+model GameLog {
+  id        Int      @id @default(autoincrement())
+  userId    Int      @map("user_id")
+  score     Int
+  xp        Int
+  createdAt DateTime @default(now()) @map("created_at")
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("game_logs")
 }

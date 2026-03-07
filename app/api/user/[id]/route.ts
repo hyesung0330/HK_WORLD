@@ -28,7 +28,6 @@ export async function GET(
                 awardsReceived: true,
                 posts: {
                     orderBy: { createdAt: "desc" },
-                    take: 10, // 최근 10개만 우선 가져옴
                     include: {
                         _count: {
                             select: { likes: true, comments: true }
