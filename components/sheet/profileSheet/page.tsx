@@ -12,8 +12,9 @@ import { Input } from "@/components/ui/input";
 import { Progress } from "@/components/ui/progress";
 import { calculateLevel } from "@/lib/xp";
 import { LuUser, LuArrowRight, LuChevronRight } from "react-icons/lu";
-import { LogOut, Edit3, Check, X, CalendarCheck, Wallet } from "lucide-react";
+import { LogOut, Edit3, Check, X, CalendarCheck, Wallet, Shield } from "lucide-react";
 import { Loading } from "@/components/ui/loading";
+import ChangePasswordDialog from "@/components/dialog/ChangePasswordDialog/page";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 
@@ -187,9 +188,19 @@ export default function ProfileSheet() {
                                                 {userData.name}
                                             </h2>
                                         )}
-                                        <Badge variant="secondary" className="rounded-full px-2.5 py-0 text-[10px] font-black bg-indigo-500/10 text-indigo-500 border-none">
-                                            {userData.role || "에디터"}
-                                        </Badge>
+                                        <div className="flex flex-wrap gap-1.5 mt-1.5">
+                                            <Badge variant="secondary" className="rounded-full px-2.5 py-0 text-[10px] font-black bg-indigo-500/10 text-indigo-500 border-none">
+                                                {userData.role || "에디터"}
+                                            </Badge>
+                                            {userData.lograSubscription && userData.lograSubscription !== "NONE" && (
+                                                <Badge className={`rounded-full px-2.5 py-0 text-[10px] font-black border-none text-white
+                                                    ${userData.lograSubscription === 'FREE' ? 'bg-slate-400' : 
+                                                      userData.lograSubscription === 'STANDARD' ? 'bg-violet-500' : 'bg-amber-500'}`}>
+                                                    로그라 {userData.lograSubscription === 'FREE' ? '프리' : 
+                                                           userData.lograSubscription === 'STANDARD' ? '스탠다드' : '프로'}
+                                                </Badge>
+                                            )}
+                                        </div>
                                     </div>
                                 </div>
 
@@ -277,6 +288,14 @@ export default function ProfileSheet() {
                                     </div>
                                 </div>
                             </section>
+
+                            {/* ACCOUNT SETTINGS (비밀번호 변경 등) - 일반 회원만 표시 */}
+                            {userData.hasPassword && (
+                                <section className="space-y-4">
+                                    <label className="text-[10px] font-black uppercase opacity-30 tracking-widest ml-1">계정 보안</label>
+                                    <ChangePasswordDialog />
+                                </section>
+                            )}
 
                             {/* RECENT POSTS LIST */}
                             <section>

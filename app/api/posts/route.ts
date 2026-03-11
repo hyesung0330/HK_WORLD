@@ -106,13 +106,46 @@ export async function POST(req: Request) {
       return NextResponse.json({ message: "유효하지 않은 사용자 ID입니다." }, { status: 400 });
     }
 
+    // --- Logra 구독 횟수 체크 ---
+    const user = await prisma.user.findUnique({
+      where: { id: authorId },
+      select: {
+        lograSubscription: true,
+        lograUsageCount: true,
+        lograNextReset: true,
+        level: true,
+      }
+    });
+
+    if (!user) {
+      return NextResponse.json({ message: "사용자를 찾을 수 없습니다." }, { status: 404 });
+    }
+
+    if (user.lograSubscription === "FREE") {
+      const now = new Date();
+      // 초기화 날짜가 지났다면 리셋
+      if (user.lograNextReset && now > user.lograNextReset) {
+        const nextMonth = new Date();
+        nextMonth.setMonth(nextMonth.getMonth() + 1);
+        await prisma.user.update({
+          where: { id: authorId },
+          data: {
+            lograUsageCount: 0,
+            lograNextReset: nextMonth
+          }
+        });
+        user.lograUsageCount = 0;
+      }
+
+      if (user.lograUsageCount >= 10) {
+        return NextResponse.json({ message: "이번 달 무료 포스트 생성 횟수(10회)를 모두 사용하셨습니다. 다음 달에 다시 이용해 주세요." }, { status: 403 });
+      }
+    }
+    // --- ---------------- ---
+
     // 프로 에디터(레벨 31+)만 COLUMN 작성 가능
     if (postType === "COLUMN") {
-      const me = await prisma.user.findUnique({ where: { id: authorId } });
-      if (!me) {
-        return NextResponse.json({ message: "사용자를 찾을 수 없습니다." }, { status: 404 });
-      }
-      if ((me.level || 1) < 31) {
+      if ((user.level || 1) < 31) {
         return NextResponse.json({ message: "프로 등급(레벨 31+)만 전문 컬럼을 작성할 수 있습니다." }, { status: 403 });
       }
     }
@@ -156,6 +189,16 @@ export async function POST(req: Request) {
 
     // 글쓰기 XP 지급 (20)
     await addXp(created.authorId, XP_RULES.POST);
+
+    // 로그라 사용 횟수 증가 (무료 구독자만)
+    if (user.lograSubscription === "FREE") {
+      await prisma.user.update({
+        where: { id: authorId },
+        data: {
+          lograUsageCount: { increment: 1 }
+        }
+      });
+    }
 
     return NextResponse.json({
       message: "게시글이 등록되었습니다.",

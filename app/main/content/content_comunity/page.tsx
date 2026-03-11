@@ -79,7 +79,7 @@ export default function ColumnsPage() {
                             className="group h-14 rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-black px-8 gap-3 shadow-xl shadow-indigo-500/20"
                         >
                             <LuPencilLine size={20} />
-                            컬럼 쓰기
+                            글쓰기
                         </Button>
                     </div>
                 </header>
@@ -113,7 +113,7 @@ export default function ColumnsPage() {
                                                 #{String(post.id).padStart(2, '0')}
                                             </span>
                                             <span className={`text-[10px] font-black tracking-widest px-2 py-0.5 rounded ${darkMode ? 'bg-white/5 text-zinc-400' : 'bg-black/5 text-slate-500'}`}>
-                                                {post.postType}
+                                                {/*{post.postType}*/} 일반 컬럼
                                             </span>
                                         </div>
                                         <h3 className="text-xl md:text-3xl font-bold tracking-tight group-hover:translate-x-2 transition-transform duration-500 break-keep leading-tight">

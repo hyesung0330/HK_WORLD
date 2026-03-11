@@ -122,6 +122,24 @@ export default function PostDetailPage() {
         }
     };
 
+    const handleDeletePost = async () => {
+        if (!window.confirm("정말로 이 게시글을 삭제하시겠습니까?")) return;
+
+        try {
+            const res = await fetch(`/api/posts/${id}`, { method: "DELETE" });
+            if (res.ok) {
+                toast.success("게시글이 삭제되었습니다.");
+                router.push("/main/content/content_c");
+            } else {
+                const data = await res.json();
+                toast.error(data.message || "삭제 실패");
+            }
+        } catch (error) {
+            console.error("Delete post error:", error);
+            toast.error("삭제 요청 중 오류가 발생했습니다.");
+        }
+    };
+
     if (!mounted) return null;
 
     if (loading) {
@@ -175,7 +193,7 @@ export default function PostDetailPage() {
                                                         post.author.role === "PROFESSIONAL" ? "전문" : "에디터"}
                                         </Badge>
                                     )}
-                                    {session?.user?.id !== String(post.authorId) && (
+                                    {session?.user?.id !== String(post.authorId) ? (
                                         <button 
                                             onClick={handleToggleFollow}
                                             disabled={followLoading}
@@ -186,6 +204,21 @@ export default function PostDetailPage() {
                                         >
                                             {isFollowing ? '팔로잉' : '팔로우'}
                                         </button>
+                                    ) : (
+                                        <div className="flex items-center gap-1 ml-2">
+                                            <button 
+                                                onClick={() => router.push(`/main/write/${id}`)}
+                                                className="text-[10px] font-bold px-2 py-0.5 rounded-full border border-zinc-300 text-zinc-500 hover:bg-zinc-100 transition-all dark:border-white/10 dark:text-zinc-400 dark:hover:bg-white/10"
+                                            >
+                                                수정하기
+                                            </button>
+                                            <button 
+                                                onClick={handleDeletePost}
+                                                className="text-[10px] font-bold px-2 py-0.5 rounded-full border border-rose-200 text-rose-500 hover:bg-rose-50 transition-all dark:border-rose-500/20 dark:text-rose-500 dark:hover:bg-rose-500/10"
+                                            >
+                                                삭제하기
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
                                 <span className="text-[10px] font-bold opacity-30 tracking-[0.2em]">{formattedDate}</span>

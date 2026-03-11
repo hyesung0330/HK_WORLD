@@ -1,11 +1,13 @@
 "use client"
 
 import { loginWithGoogle } from "@/lib/actions/auth"
+import { usePathname } from "next/navigation"
 
 export default function GoogleLoginButton() {
+    const pathname = usePathname();
     return (
         <button
-            onClick={() => loginWithGoogle()}
+            onClick={() => loginWithGoogle(pathname)}
             className="relative flex items-center justify-center gap-3 w-full px-4 py-3 border border-gray-300 rounded-lg bg-white text-gray-700 font-medium hover:bg-gray-50 transition-all shadow-sm active:scale-[0.98]"
         >
             {/* 로고 영역: 좌측에 절대 위치로 고정 */}

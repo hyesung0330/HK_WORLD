@@ -187,12 +187,14 @@ export default function CommunityPage() {
                                         {post.author?.name?.charAt(0) || "A"}
                                     </div>
                                     <span className="text-[12px] font-bold tracking-tight">
-                        {post.author?.name || "익명"}
-                    </span>
-                                    <span className={`text-[9px] font-black px-1.5 py-0.5 rounded-[4px] tracking-tighter uppercase ml-1
-                        ${darkMode ? 'bg-white/10 text-white' : 'bg-zinc-100 text-zinc-900'}`}>
-                        {post.postType}
-                    </span>
+                                        {post.author?.name || "익명"}
+                                    </span>
+                                    <span className={`text-[9px] font-semibold px-1.5 py-0.5 rounded-md tracking-tighter ml-1
+                                        ${darkMode ? 'bg-white/10 text-white' : 'bg-zinc-100 text-zinc-900'}`}>
+                                        {post.postType === "TECHNICAL" ? "일반 컬럼" :
+                                            post.postType === "COLUMN" ? "전문 컬럼" :
+                                                post.postType === "PIECE" ? "작품" : post.postType}
+                                    </span>
                                 </div>
 
                                 <div className="flex flex-col md:flex-row gap-4 md:gap-8 justify-between">
@@ -205,18 +207,14 @@ export default function CommunityPage() {
                                         </p>
                                     </div>
 
-                                    <div className="shrink-0">
-                                        <div className={`relative w-full md:w-48 h-40 md:h-32 rounded-2xl overflow-hidden border transition-transform duration-500 group-hover:scale-[1.02]
-                            ${darkMode ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-100'}`}>
-                                            {post.coverImage ? (
-                                                <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover" />
-                                            ) : (
-                                                <div className="w-full h-full flex items-center justify-center opacity-10">
-                                                    <span className="text-[10px] font-black ">NO IMAGE</span>
-                                                </div>
-                                            )}
+                                    {post.coverImage && (
+                                        <div className="shrink-0">
+                                            <div className={`relative w-full md:w-48 h-40 md:h-32 rounded-2xl overflow-hidden border transition-transform duration-500 group-hover:scale-[1.02]
+                                            ${darkMode ? 'border-white/10 bg-white/5' : 'border-slate-200 bg-slate-100'}`}>
+                                                                <img src={post.coverImage} alt={post.title} className="w-full h-full object-cover" />
+                                            </div>
                                         </div>
-                                    </div>
+                                    )}
                                 </div>
 
                                 <div className="flex items-center gap-4 md:gap-6 mt-6 text-[10px] md:text-[11px] font-bold opacity-40 uppercase tracking-widest">
@@ -246,7 +244,7 @@ export default function CommunityPage() {
                 <footer className={`mt-20 md:mt-40 pt-10 md:pt-20 border-t flex flex-col md:flex-row justify-between items-start gap-12 transition-colors
                     ${darkMode ? 'border-white/10' : 'border-slate-200'}`}>
                     <div className="space-y-4">
-                        <div className="text-xl md:text-2xl font-black tracking-tighter">Textra<span className="ml-2 text-[10px] font-bold opacity-30 max-w-[200px] leading-loose uppercase tracking-widest">2026</span></div>
+                        <div className="text-xl md:text-2xl font-semibold tracking-tighter">Textra<span className="ml-2 text-[10px] font-bold opacity-30 max-w-[200px] leading-loose uppercase tracking-widest">2026</span></div>
                     </div>
                     <div className="grid grid-cols-2 gap-10 md:gap-20">
                         <div className="flex flex-col gap-4 text-[10px] font-black uppercase tracking-widest">
@@ -257,7 +255,7 @@ export default function CommunityPage() {
                                 rel="noopener noreferrer"
                                 className="hover:text-indigo-500 transition-colors duration-300 flex items-center gap-1"
                             >
-                                Github
+                                Github <span className={"text-[10px] font-semibold"}>바로가기</span>
                             </a>
                         </div>
                     </div>

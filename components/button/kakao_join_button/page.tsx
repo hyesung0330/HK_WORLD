@@ -1,11 +1,13 @@
 "use client"
 
 import { loginWithKakao } from "@/lib/actions/auth"
+import { usePathname } from "next/navigation"
 
 export default function KaKaoJoinButton() {
+    const pathname = usePathname();
     return (
         <button
-            onClick={() => loginWithKakao()}
+            onClick={() => loginWithKakao(pathname)}
             // 카카오 공식 배경색: #FEE500, 텍스트색: #000000
             className="relative flex items-center justify-center w-full px-4 py-3 rounded-lg bg-[#FEE500] text-[#000000] font-medium hover:bg-[#FADA00] transition-all shadow-sm active:scale-[0.98]"
         >
@@ -23,7 +25,7 @@ export default function KaKaoJoinButton() {
             </div>
 
             {/* 텍스트 영역: 중앙 정렬 */}
-            <span className={"ml-4 font-semibold"}>Kakao로 시작하기</span>
+            <span className={"ml-4 font-semibold"}>카카오로 시작하기</span>
         </button>
     )
 }

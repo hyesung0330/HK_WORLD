@@ -31,6 +31,10 @@ model User {
   lastAttendanceDate DateTime? @map("last_attendance_date")
 
   coderaUsageCount Int      @default(0) @map("codera_usage_count")
+  
+  lograSubscription LograSubscription @default(NONE) @map("logra_subscription")
+  lograUsageCount   Int               @default(0)    @map("logra_usage_count")
+  lograNextReset    DateTime?         @map("logra_next_reset")
 
   createdAt DateTime @default(now()) @map("created_at")
   updatedAt DateTime @updatedAt @map("updated_at")
@@ -53,6 +57,7 @@ model User {
   gameLogs       GameLog[]
   notifications  Notification[] @relation("user_notifications")
   sentNotifications Notification[] @relation("sender_notifications")
+  commentLikes   CommentLike[]
 
   @@map("users")
 }
@@ -62,6 +67,13 @@ enum UserRole {
   SENIOR
   PRO
   PROFESSIONAL
+}
+
+enum LograSubscription {
+  NONE
+  FREE
+  STANDARD
+  PRO
 }
 
 enum SettlementStatus {
@@ -264,6 +276,8 @@ model Comment {
   parent   Comment?  @relation("Replies", fields: [parentId], references: [id], onDelete: Cascade)
   replies  Comment[] @relation("Replies")
 
+  likes    CommentLike[]
+
   @@map("comments")
 }
 
@@ -286,6 +300,24 @@ model Like {
   @@unique([userId, postId])
   @@unique([anonymousId, postId])
   @@map("likes")
+}
+
+model CommentLike {
+  id        Int      @id @default(autoincrement())
+  userId    Int?     @map("user_id")
+  commentId Int      @map("comment_id")
+  
+  // 익명 좋아요용
+  anonymousId String? @map("anonymous_id")
+
+  user    User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+
+  @@unique([userId, commentId])
+  @@unique([anonymousId, commentId])
+  @@map("comment_likes")
 }
 
 model Scrap {

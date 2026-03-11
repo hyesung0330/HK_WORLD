@@ -10,6 +10,8 @@ import { useSession } from "next-auth/react";
 import { toast } from "sonner";
 
 type WriteModeHeaderProps = {
+    postId?: number;
+    isEdit?: boolean;
     postData?: {
         title: string;
         content: string;
@@ -22,7 +24,7 @@ type WriteModeHeaderProps = {
     onPreview?: () => void;
 };
 
-export default function WriteModeHeader({ postData, onPreview }: WriteModeHeaderProps) {
+export default function WriteModeHeader({ postId, isEdit, postData, onPreview }: WriteModeHeaderProps) {
     const router = useRouter();
     const pathname = usePathname();
     const { darkMode, toggleDarkMode } = useTheme();
@@ -123,18 +125,27 @@ export default function WriteModeHeader({ postData, onPreview }: WriteModeHeader
                                     return;
                                 }
                                 try {
-                                    const res = await fetch("/api/posts", {
-                                        method: "POST",
+                                    const url = isEdit ? `/api/posts/${postId}` : "/api/posts";
+                                    const method = isEdit ? "PATCH" : "POST";
+
+                                    const res = await fetch(url, {
+                                        method,
                                         headers: { "Content-Type": "application/json" },
                                         body: JSON.stringify({ title, content, mode, link, techStack, coverImage, tags }),
                                     });
                                     if (res.ok) {
                                         const data = await res.json();
-                                        toast.success("정상적으로 등록되었습니다");
-                                        router.push(`/main/content/content_comunity/${data.post.id}`);
+                                        toast.success(isEdit ? "정상적으로 수정되었습니다" : "정상적으로 등록되었습니다");
+                                        
+                                        const postType = data.post.postType;
+                                        let redirectPath = "/main/content/content_comunity";
+                                        if (postType === "COLUMN") redirectPath = "/main/content/content_c";
+                                        else if (postType === "PIECE") redirectPath = "/main/content/content_sell";
+                                        
+                                        router.push(`${redirectPath}/${isEdit ? postId : data.post.id}`);
                                     } else {
                                         const err = await res.json().catch(() => ({}));
-                                        throw new Error(err.message || "게시글 작성에 실패했습니다.");
+                                        throw new Error(err.message || "게시글 처리에 실패했습니다.");
                                     }
                                 } catch (e: any) {
                                     alert(e.message || "오류가 발생했습니다.");
@@ -143,7 +154,7 @@ export default function WriteModeHeader({ postData, onPreview }: WriteModeHeader
                             className={`px-4 md:px-6 py-1.5 md:py-2 text-[10px] md:text-[11px] font-bold rounded-full transition-all uppercase tracking-widest shadow-lg
                             ${darkMode ? 'bg-white text-black hover:bg-gray-200' : 'bg-slate-900 text-white hover:bg-slate-800'}`}
                         >
-                            {isWritePage ? "컬럼 등록" : "글 올리기"}
+                            {isEdit ? "수정 완료" : isWritePage ? "컬럼 등록" : "글 올리기"}
                         </button>
                     </div>
                 ) : (

@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect } from "react";
 import { useSession } from "next-auth/react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Input } from "@/components/ui/input";
-import { Loading } from "@/components/ui/loading";
+import {Avatar, AvatarFallback, AvatarImage} from "@/components/ui/avatar";
+import {Input} from "@/components/ui/input";
+import {Loading} from "@/components/ui/loading";
 import {Button} from "@/components/ui/button";
 import {Badge} from "@/components/ui/badge";
+import {Heart} from "lucide-react";
+import {toast} from "sonner";
 
 interface CommentSectionProps {
     darkMode: boolean;
@@ -33,9 +35,14 @@ export default function CommentSection({ darkMode, postId }: CommentSectionProps
             if (res.ok) {
                 const data = await res.json();
                 setComments(data);
+            } else {
+                const errorData = await res.json().catch(() => ({}));
+                console.error("Fetch comments error response:", res.status, errorData);
+                toast.error(`댓글을 불러오는데 실패했습니다: ${errorData.message || res.statusText}`);
             }
         } catch (error) {
             console.error("Fetch comments error:", error);
+            toast.error("댓글 서버 연결에 실패했습니다.");
         } finally {
             setLoading(false);
         }
@@ -67,6 +74,58 @@ export default function CommentSection({ darkMode, postId }: CommentSectionProps
             }
         } catch (error) {
             console.error("Post comment error:", error);
+        }
+    };
+
+    const handleToggleCommentLike = async (commentId: number) => {
+        if (!session) {
+            toast.error("로그인이 필요한 기능입니다.");
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/comments/${commentId}/like`, {
+                method: "POST",
+            });
+
+            if (res.ok) {
+                const data = await res.json();
+                setComments(prev => {
+                    return prev.map(comment => {
+                        if (comment.id === commentId) {
+                            return {
+                                ...comment,
+                                isLiked: data.isLiked,
+                                _count: {
+                                    ...comment._count,
+                                    likes: data.isLiked ? (comment._count?.likes || 0) + 1 : (comment._count?.likes || 0) - 1
+                                }
+                            };
+                        }
+                        if (comment.replies) {
+                            return {
+                                ...comment,
+                                replies: comment.replies.map((reply: any) => {
+                                    if (reply.id === commentId) {
+                                        return {
+                                            ...reply,
+                                            isLiked: data.isLiked,
+                                            _count: {
+                                                ...reply._count,
+                                                likes: data.isLiked ? (reply._count?.likes || 0) + 1 : (reply._count?.likes || 0) - 1
+                                            }
+                                        };
+                                    }
+                                    return reply;
+                                })
+                            };
+                        }
+                        return comment;
+                    });
+                });
+            }
+        } catch (error) {
+            console.error("Toggle comment like error:", error);
         }
     };
 
@@ -139,12 +198,22 @@ export default function CommentSection({ darkMode, postId }: CommentSectionProps
                                     <button className="text-[9px] font-black opacity-0 group-hover:opacity-40 tracking-widest uppercase transition-opacity">MORE</button>
                                 </div>
                                 <p className={`text-sm leading-relaxed ${darkMode ? 'text-zinc-400' : 'text-slate-600'}`}>{comment.content}</p>
-                                <button
-                                    onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
-                                    className="text-[9px] font-black text-indigo-600 uppercase tracking-[0.2em] pt-1 hover:line-through"
-                                >
-                                    답글 달기
-                                </button>
+                                <div className="flex items-center gap-4 pt-1">
+                                    <button
+                                        onClick={() => setReplyingTo(replyingTo === comment.id ? null : comment.id)}
+                                        className="text-[9px] font-black text-indigo-600 uppercase tracking-[0.2em] hover:line-through"
+                                    >
+                                        답글 달기
+                                    </button>
+                                    <button
+                                        onClick={() => handleToggleCommentLike(comment.id)}
+                                        className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.2em] transition-colors
+                                            ${comment.isLiked ? 'text-rose-500' : 'opacity-40 hover:opacity-100'}`}
+                                    >
+                                        <Heart size={10} className={comment.isLiked ? "fill-current" : ""} />
+                                        좋아요 {comment._count?.likes || 0}
+                                    </button>
+                                </div>
                             </div>
                         </div>
 
@@ -170,6 +239,14 @@ export default function CommentSection({ darkMode, postId }: CommentSectionProps
                                         </span>
                                     </div>
                                     <p className={`text-sm leading-relaxed ${darkMode ? 'text-zinc-400' : 'text-slate-600'}`}>{reply.content}</p>
+                                    <button
+                                        onClick={() => handleToggleCommentLike(reply.id)}
+                                        className={`flex items-center gap-1.5 text-[9px] font-black uppercase tracking-[0.2em] transition-colors
+                                            ${reply.isLiked ? 'text-rose-500' : 'opacity-40 hover:opacity-100'}`}
+                                    >
+                                        <Heart size={10} className={reply.isLiked ? "fill-current" : ""} />
+                                        좋아요 {reply._count?.likes || 0}
+                                    </button>
                                 </div>
                             </div>
                         ))}

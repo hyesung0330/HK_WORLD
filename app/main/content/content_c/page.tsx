@@ -83,17 +83,17 @@ export default function ColumnsPage() {
                             Columns
                         </h2>
                         <p className={`text-sm font-medium ${darkMode ? 'text-zinc-500' : 'text-slate-400'}`}>
-                            누구나 자유롭게 글을 작성하고 공유하는 공간이에요
+                            인증된 에디터가 글을 쓰는 공간이에요
                         </p>
                     </div>
 
-                    <Button
-                        onClick={() => router.push('/main/write')}
-                        className="rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-black px-6 py-6 gap-2 shadow-lg shadow-indigo-500/20"
-                    >
-                        <LuPencilLine size={18} />
-                        컬럼 쓰기
-                    </Button>
+                    {/*<Button*/}
+                    {/*    onClick={() => router.push('/main/write')}*/}
+                    {/*    className="rounded-full bg-indigo-600 hover:bg-indigo-700 text-white font-black px-6 py-6 gap-2 shadow-lg shadow-indigo-500/20"*/}
+                    {/*>*/}
+                    {/*    <LuPencilLine size={18} />*/}
+                    {/*    글쓰기*/}
+                    {/*</Button>*/}
                 </div>
 
                 {/* 게시글 목록 테이블 */}

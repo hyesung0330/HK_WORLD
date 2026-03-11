@@ -125,6 +125,24 @@ export default function PostDetailPage() {
         }
     };
 
+    const handleDeletePost = async () => {
+        if (!window.confirm("정말로 이 게시글을 삭제하시겠습니까?")) return;
+
+        try {
+            const res = await fetch(`/api/posts/${id}`, { method: "DELETE" });
+            if (res.ok) {
+                toast.success("게시글이 삭제되었습니다.");
+                router.push("/main/content/content_comunity");
+            } else {
+                const data = await res.json();
+                toast.error(data.message || "삭제 실패");
+            }
+        } catch (error) {
+            console.error("Delete post error:", error);
+            toast.error("삭제 요청 중 오류가 발생했습니다.");
+        }
+    };
+
     if (!mounted) return null;
 
     if (loading) {
@@ -188,7 +206,7 @@ export default function PostDetailPage() {
                                                         post.author.role === "PROFESSIONAL" ? "전문" : "에디터"}
                                         </Badge>
                                     )}
-                                    {session?.user?.id !== String(post.authorId) && (
+                                    {session?.user?.id !== String(post.authorId) ? (
                                         <button 
                                             onClick={handleToggleFollow}
                                             disabled={followLoading}
@@ -199,6 +217,21 @@ export default function PostDetailPage() {
                                         >
                                             {isFollowing ? '팔로잉' : '팔로우'}
                                         </button>
+                                    ) : (
+                                        <div className="flex items-center gap-1 ml-2">
+                                            <button 
+                                                onClick={() => router.push(`/main/write/${id}`)}
+                                                className="text-[10px] font-bold px-2 py-0.5 rounded-full border border-zinc-300 text-zinc-500 hover:bg-zinc-100 transition-all dark:border-white/10 dark:text-zinc-400 dark:hover:bg-white/10"
+                                            >
+                                                수정하기
+                                            </button>
+                                            <button 
+                                                onClick={handleDeletePost}
+                                                className="text-[10px] font-bold px-2 py-0.5 rounded-full border border-rose-200 text-rose-500 hover:bg-rose-50 transition-all dark:border-rose-500/20 dark:text-rose-500 dark:hover:bg-rose-500/10"
+                                            >
+                                                삭제하기
+                                            </button>
+                                        </div>
                                     )}
                                 </div>
                                 <span className="text-sm font-bold opacity-30">{formattedDate}</span>
@@ -229,13 +262,13 @@ export default function PostDetailPage() {
                 )}
 
                 {/* 본문 기사 */}
-                <article className={`text-xl md:text-2xl leading-relaxed font-medium mb-24 prose prose-xl max-w-none
+                <article className={`text-xl md:text-2xl leading-relaxed font-medium mb-4 prose prose-xl max-w-none
                     ${darkMode ? 'prose-invert text-zinc-400' : 'text-slate-600'}`}>
                     <div dangerouslySetInnerHTML={{ __html: post.content }} />
                 </article>
 
                 {/* 인터랙션 영역 */}
-                <div className={`flex flex-col items-center gap-6 py-20 border-y transition-colors mb-20
+                <div className={`flex flex-col items-center gap-6 py-20 border-y transition-colors mb-0
                     ${darkMode ? 'border-white/5' : 'border-slate-200'}`}>
                     <button 
                         onClick={handleToggleLike}
@@ -253,43 +286,53 @@ export default function PostDetailPage() {
                 {/* 댓글 섹션 */}
                 <CommentSection darkMode={darkMode} postId={id as string} />
 
-                {/* 다음 글 유도 (작가 소개로 대체 또는 보강) */}
-                <div className="mt-32">
-                    <div className={`p-12 rounded-[40px] border flex flex-col items-center text-center gap-6 group cursor-pointer transition-all
-                        ${darkMode ? 'bg-white/5 border-white/10 hover:bg-white/10' : 'bg-slate-100 border-slate-200 hover:bg-white'}`}>
-                        <span className="text-XL font-black opacity-30 uppercase tracking-[0.4em]">글쓴이</span>
-                        <Avatar className={`w-20 h-20 border-2 ${darkMode ? 'border-white/20' : 'border-zinc-200'} grayscale group-hover:grayscale-0 transition-all`}>
-                             <AvatarImage src={post.author?.image} />
-                             <AvatarFallback className="font-black ">{post.author?.name?.slice(0, 2).toUpperCase()}</AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col items-center gap-2">
-                            <h4 className="text-3xl font-black tracking-tighter group-hover: uppercase leading-tight">
-                                {post.author?.name}
-                            </h4>
-                            {post.author?.role && (
-                                <Badge variant="secondary" className="rounded-full px-3 py-0.5 text-[10px] font-semibold bg-zinc-100 text-zinc-600 dark:bg-white/10 dark:text-zinc-400">
-                                    {post.author.role === "JUNIOR" ? "주니어 에디터" :
-                                        post.author.role === "SENIOR" ? "시니어 에디터" :
-                                            post.author.role === "PRO" ? "프로 에디터" :
-                                                post.author.role === "PROFESSIONAL" ? "전문 에디터" : "에디터"}
-                                </Badge>
-                            )}
+                <div className="h-auto mt-12">
+                    <div className={`p-8 md:p-10 rounded-[32px] border flex flex-col md:flex-row items-center md:items-start justify-between gap-8 group transition-all duration-500
+        ${darkMode ? 'bg-white/[0.03] border-white/5 hover:bg-white/[0.06]' : 'bg-slate-50 border-slate-200 hover:bg-white hover:shadow-xl'}`}>
+
+                        {/* Left Side: Avatar & Info */}
+                        <div className="flex flex-col md:flex-row items-center md:items-start gap-6 flex-1">
+                            <div className="relative">
+                                <Avatar className={`w-20 h-20 border-4 ${darkMode ? 'border-white/10' : 'border-white'} shadow-lg grayscale group-hover:grayscale-0 transition-all duration-700`}>
+                                    <AvatarImage src={post.author?.image} />
+                                    <AvatarFallback className="font-black text-xl bg-indigo-500 text-white">
+                                        {post.author?.name?.slice(0, 2).toUpperCase()}
+                                    </AvatarFallback>
+                                </Avatar>
+                                {/* 롤 배지를 아바타 하단에 겹치게 배치하여 공간 절약 */}
+                                <div className="absolute -bottom-2 left-1/2 -translate-x-1/2 whitespace-nowrap">
+                                    <Badge className={`px-2 py-0.5 text-[9px] font-black border-none shadow-sm ${darkMode ? 'bg-zinc-800 text-zinc-400' : 'bg-white text-zinc-600'}`}>
+                                        {post.author.role === "JUNIOR" ? "JUNIOR" :
+                                            post.author.role === "SENIOR" ? "SENIOR" :
+                                                post.author.role === "PRO" ? "PRO" :
+                                                    post.author.role === "PROFESSIONAL" ? "EXPERT" : "EDITOR"}
+                                    </Badge>
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col items-center md:items-start text-center md:text-left gap-2 pt-1">
+                                <div className="flex items-center gap-2">
+                                    <h4 className="text-2xl font-[1000] tracking-tighter uppercase leading-none">
+                                        {post.author?.name}
+                                    </h4>
+                                    <span className="text-[10px] font-black opacity-20 uppercase tracking-widest hidden md:block">Author</span>
+                                </div>
+                                <p className="text-sm opacity-50 max-w-sm font-medium leading-relaxed break-keep">
+                                    {post.author?.bio || "아직 소개글이 작성되지 않았어요."}
+                                </p>
+                            </div>
                         </div>
-                        <p className="text-sm opacity-40 max-w-md font-medium leading-relaxed">
-                            {post.author?.bio || "No bio yet. Follow this artist for more upcoming thoughts and deep-dives into tech and design."}
-                        </p>
-                        <div className="flex items-center gap-3 mt-4">
-                            <Button variant="outline" onClick={() => router.push(`/user/${post.author?.id}`)} className="rounded-full font-black text-[10px] tracking-widest">
-                                에디터 프로필 보기
-                            </Button>
+
+                        {/* Right Side: Action Buttons */}
+                        <div className="flex flex-row md:flex-col items-center gap-3 shrink-0">
                             {session?.user?.id !== String(post.authorId) && (
-                                <Button 
+                                <Button
                                     onClick={handleToggleFollow}
                                     disabled={followLoading}
-                                    className={`rounded-full font-black text-[10px] tracking-widest px-8
-                                        ${isFollowing 
-                                            ? 'bg-zinc-200 text-zinc-600 dark:bg-white/10 dark:text-zinc-400 hover:bg-zinc-300' 
-                                            : 'bg-zinc-900 text-white dark:bg-white dark:text-black hover:opacity-80 shadow-lg'}`}
+                                    className={`h-11 rounded-2xl font-black text-[11px] tracking-widest px-8 transition-all
+                                        ${isFollowing
+                                        ? 'bg-zinc-200 text-zinc-600 dark:bg-white/10 dark:text-zinc-400 hover:bg-rose-500 hover:text-white'
+                                        : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-500/20'}`}
                                 >
                                     {isFollowing ? (
                                         <div className="flex items-center gap-2"><UserCheck size={14} /> 팔로잉</div>
@@ -298,6 +341,13 @@ export default function PostDetailPage() {
                                     )}
                                 </Button>
                             )}
+                            <Button
+                                variant="outline"
+                                onClick={() => router.push(`/user/${post.author?.id}`)}
+                                className={`h-11 rounded-2xl font-black text-[11px] tracking-widest px-6 border-current/10 hover:bg-current/5 transition-all`}
+                            >
+                                프로필 방문
+                            </Button>
                         </div>
                     </div>
                 </div>

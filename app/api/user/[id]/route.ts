@@ -57,6 +57,7 @@ export async function GET(
         }
 
         const { password, ...userWithoutPassword } = user as any;
+        const hasPassword = !!password;
         const gold = user.awardsReceived.filter(a => a.type === 'GOLD').length;
         const silver = user.awardsReceived.filter(a => a.type === 'SILVER').length;
         const bronze = user.awardsReceived.filter(a => a.type === 'BRONZE').length;
@@ -64,6 +65,7 @@ export async function GET(
         return NextResponse.json({
             ...userWithoutPassword,
             isFollowing,
+            hasPassword,
             medals: {
                 gold, silver, bronze, total: gold + silver + bronze
             }

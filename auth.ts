@@ -1,6 +1,7 @@
 import NextAuth from "next-auth"
 import KakaoProvider from "next-auth/providers/kakao"
 import GoogleProvider from "next-auth/providers/google"
+import NaverProvider from "next-auth/providers/naver"
 import Credentials from "next-auth/providers/credentials"
 import bcryptjs from "bcryptjs"
 import { PrismaAdapter } from "@auth/prisma-adapter"
@@ -69,6 +70,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 }
             },
         }),
+        NaverProvider({
+            clientId: process.env.NAVER_CLIENT_ID,
+            clientSecret: process.env.NAVER_CLIENT_SECRET,
+            profile(profile) {
+                // 네이버는 결과값이 profile.response 안에 담겨 옵니다.
+                return {
+                    id: profile.response.id,
+                    name: profile.response.name || profile.response.nickname || `작가_${profile.response.id.slice(0, 5)}`,
+                    email: profile.response.email,
+                    image: profile.response.profile_image,
+                    reputation: 0,
+                    level: 1,
+                    role: "JUNIOR",
+                }
+            },
+        }),
     ],
     session: {
         strategy: "jwt",
@@ -83,6 +100,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 token.role = (user as any).role || "JUNIOR";
                 token.github = (user as any).githubUrl || (user as any).github || null;
                 token.bio = (user as any).bio || null;
+                token.lograSubscription = (user as any).lograSubscription || "NONE";
+                token.lograUsageCount = (user as any).lograUsageCount || 0;
+                token.lograNextReset = (user as any).lograNextReset || null;
             }
             if (trigger === "update" && session) {
                 if (session.user?.name) token.name = session.user.name;
@@ -91,6 +111,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 if (session.user?.xp !== undefined) token.xp = session.user.xp;
                 if (session.user?.level !== undefined) token.level = session.user.level;
                 if (session.user?.points !== undefined) token.points = session.user.points;
+                if (session.user?.lograSubscription !== undefined) token.lograSubscription = session.user.lograSubscription;
+                if (session.user?.lograUsageCount !== undefined) token.lograUsageCount = session.user.lograUsageCount;
+                if (session.user?.lograNextReset !== undefined) token.lograNextReset = session.user.lograNextReset;
             }
             return token;
         },
@@ -103,6 +126,9 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
                 (session.user as any).role = token.role as string;
                 (session.user as any).github = token.github as string;
                 (session.user as any).bio = token.bio as string;
+                (session.user as any).lograSubscription = token.lograSubscription as string;
+                (session.user as any).lograUsageCount = token.lograUsageCount as number;
+                (session.user as any).lograNextReset = token.lograNextReset as Date | null;
             }
             return session;
         },

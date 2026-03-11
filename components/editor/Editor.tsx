@@ -169,8 +169,11 @@ const Editor = ({ content, onChange, darkMode }: EditorProps) => {
   });
 
   useEffect(() => {
-    if (editor && content === "" && editor.getHTML() !== "<p></p>") {
-      editor.commands.setContent("");
+    if (editor && content !== editor.getHTML()) {
+        // 불필요한 업데이트 방지 (빈 문서 상태 확인)
+        if (content === "" && (editor.getHTML() === "<p></p>" || editor.getHTML() === "")) return;
+        
+        editor.commands.setContent(content);
     }
   }, [content, editor]);
 
@@ -237,10 +240,10 @@ const Editor = ({ content, onChange, darkMode }: EditorProps) => {
           }
         `}</style>
 
+                tippyOptions={{ duration: 150, offset: [0, 8] }}
         {editor && (
             <BubbleMenu
                 editor={editor}
-                tippyOptions={{ duration: 150, offset: [0, 8] }}
                 shouldShow={({ editor }) => editor.isActive('table')}
                 className={`flex items-center gap-0.5 p-1 rounded-md border shadow-lg ${
                     darkMode ? 'bg-[#252525] border-[#373737]' : 'bg-white border-zinc-200'
@@ -296,11 +299,11 @@ const Editor = ({ content, onChange, darkMode }: EditorProps) => {
               </div>
             </BubbleMenu>
         )}
+                tippyOptions={{ duration: 150, offset: [0, 8] }}
 
         {editor && (
             <BubbleMenu
                 editor={editor}
-                tippyOptions={{ duration: 150, offset: [0, 8] }}
                 shouldShow={({ editor }) => editor.isActive('image')}
                 className={`flex items-center gap-0.5 p-1 rounded-md border shadow-lg ${
                     darkMode ? 'bg-[#252525] border-[#373737]' : 'bg-white border-zinc-200'

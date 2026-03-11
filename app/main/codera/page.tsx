@@ -472,7 +472,7 @@ CMD ["npm", "start"]`}</code>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-10 max-w-5xl mx-auto">
                         <div className={`p-8 md:p-12 rounded-[2.5rem] md:rounded-[4rem] border transition-all flex flex-col ${darkMode ? 'bg-white/5 border-white/5' : 'bg-white border-slate-200 shadow-xl'}`}>
                             <div className="mb-8 md:mb-12">
-                                <h3 className="text-xl md:text-2xl font-black mb-2 uppercase opacity-40 tracking-tighter">Trial Pass</h3>
+                                <h3 className="text-xl md:text-2xl font-black mb-2 uppercase opacity-40 tracking-tighter">FREE 구독</h3>
                                 <div className="text-5xl md:text-6xl font-[1000] tracking-tighter mb-4">0 <span className="text-sm opacity-30 font-black tracking-normal uppercase">KRW</span></div>
                                 <p className="text-xs md:text-sm opacity-40 font-bold">누구나 Codera의 강력함을 경험할 수 있도록.</p>
                             </div>
@@ -493,10 +493,10 @@ CMD ["npm", "start"]`}</code>
                         ${darkMode ? 'bg-indigo-500/10' : 'bg-indigo-50'}`}>
                             <div className="absolute top-6 md:top-10 right-6 md:right-10 bg-indigo-500 text-white text-[9px] md:text-[10px] font-black px-4 md:px-5 py-1.5 md:py-2 rounded-full uppercase tracking-[0.2em] shadow-lg">Recommended</div>
                             <div className="mb-8 md:mb-12">
-                                <h3 className="text-xl md:text-2xl font-black mb-2 uppercase text-indigo-500 tracking-tighter">Pro Access</h3>
+                                <h3 className="text-xl md:text-2xl font-black mb-2 uppercase text-indigo-500 tracking-tighter">Pro 구독</h3>
                                 <div className="text-5xl md:text-6xl font-[1000] tracking-tighter mb-4 flex items-baseline gap-2">
-                                    <span className="text-indigo-500">1,000</span>
-                                    <span className="text-sm opacity-40 font-black tracking-normal uppercase">P / 10회</span>
+                                    <span className="text-indigo-500">9,700</span>
+                                    <span className="text-sm opacity-40 font-black tracking-normal uppercase">P / 월</span>
                                 </div>
                                 <p className="text-xs md:text-sm opacity-50 font-bold text-indigo-900/60 dark:text-indigo-100/60">전문 개발자의 워크플로우를 완성하는 선택.</p>
                             </div>
@@ -535,15 +535,15 @@ CMD ["npm", "start"]`}</code>
                             onClick={() => router.push('/main/write?mode=codera')}
                             className="w-full md:w-auto h-16 md:h-20 px-12 md:px-16 rounded-[1.5rem] md:rounded-[2.5rem] bg-white text-black hover:bg-indigo-500 hover:text-white font-[1000] text-lg md:text-xl tracking-widest gap-4 transition-all hover:scale-110 relative z-10 shadow-2xl shadow-white/10"
                         >
-                            글쓰기 시작
+                            CODERA 구독하기
                         </Button>
                     </div>
                 </section>
             </main>
 
             <footer className="py-24 text-center border-t border-current/5 mt-20">
-                <p className="text-[10px] font-[1000] opacity-20 ">
-                    Codera Engine v3.0 • Developed by Textra Intelligence 2026
+                <p className="text-[10px] opacity-20 ">
+                    Codera Engine v1.0.0 • Developed by Textra Studio 2026
                 </p>
             </footer>
         </div>

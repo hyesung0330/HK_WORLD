@@ -16,13 +16,18 @@ import {
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogTrigger } from "@/components/ui/dialog";
-import GoogleLoginButton from "@/components/button/google_login_button/page";
+import KaKaoJoinButton from "@/components/button/kakao_join_button/page";
+import GoogleJoinButton from "@/components/button/google_join_button/page";
+import NaverJoinButton from "@/components/button/Naver_join_button/page";
 import KaKaoLoginButton from "@/components/button/kakao_login_button/page";
+import GoogleLoginButton from "@/components/button/google_login_button/page";
+import NaverLoginButton from "@/components/button/Naver_login_button/page";
 
 export default function AuthDialog() {
     const { darkMode } = useTheme();
     const router = useRouter();
     const [isLoginView, setIsLoginView] = useState(true); // 로그인/회원가입 전환 상태
+    const [isForgotPasswordView, setIsForgotPasswordView] = useState(false); // 비밀번호 찾기 전환 상태
     const [showEmailForm, setShowEmailForm] = useState(false); // 이메일 가입 폼 표시 상태
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
@@ -35,8 +40,37 @@ export default function AuthDialog() {
     // 상태 전환 시 폼 노출 여부 초기화
     const toggleView = () => {
         setIsLoginView(!isLoginView);
+        setIsForgotPasswordView(false);
         setShowEmailForm(false);
         setError("");
+    };
+
+    const handleForgotPassword = async (e: React.FormEvent) => {
+        e.preventDefault();
+        setIsLoading(true);
+        setError("");
+
+        try {
+            const res = await fetch("/api/auth/forgot-password", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ email }),
+            });
+
+            const data = await res.json();
+            const message = data.debug ? `${data.message}\n${data.debug}` : data.message;
+
+            if (res.ok) {
+                setError(message);
+                // 성공 시 약간의 딜레이 후 로그인 화면으로 돌아가게 할 수도 있음
+            } else {
+                setError(message || "오류가 발생했습니다.");
+            }
+        } catch (err) {
+            setError("서버와의 통신 중 오류가 발생했습니다.");
+        } finally {
+            setIsLoading(false);
+        }
     };
 
     const handleLogin = async (e: React.FormEvent) => {
@@ -100,6 +134,7 @@ export default function AuthDialog() {
         <Dialog onOpenChange={(open) => {
             if (!open) {
                 setShowEmailForm(false);
+                setIsForgotPasswordView(false);
                 setError("");
                 setEmail("");
                 setPassword("");
@@ -121,12 +156,53 @@ export default function AuthDialog() {
                 }`}>
                     <CardContent className="grid gap-5 px-6 md:px-8 py-2">
                         <div className="flex items-center justify-center py-2 text-center">
-                            <CardTitle className="text-xl md:text-2xl font-black tracking-tight break-keep">
-                                {isLoginView ? "Textra 로그인" : "Textra에 오신것을 환영합니다."}
+                            <CardTitle className="text-xl md:text-2xl font-semibold tracking-tight break-keep">
+                                {isForgotPasswordView ? "비밀번호 찾기" : isLoginView ? "Textra 로그인" : "Textra에 오신것을 환영합니다."}
                             </CardTitle>
                         </div>
-                        {/* --- 로그인 뷰일 때 --- */}
-                        {isLoginView ? (
+                        {/* --- 비밀번호 찾기 뷰일 때 --- */}
+                        {isForgotPasswordView ? (
+                            <form onSubmit={handleForgotPassword} className="grid gap-4">
+                                <div className="grid gap-2">
+                                    <Label className="text-[10px] font-black uppercase tracking-widest opacity-70">이메일</Label>
+                                    <Input 
+                                        type="email" 
+                                        placeholder="m@example.com" 
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        required
+                                        className={darkMode ? "bg-[#1c1c1c] border-none" : "bg-slate-100 border-none"} 
+                                    />
+                                </div>
+                                {error && (
+                                    <p className={`text-[11px] font-bold whitespace-pre-line leading-relaxed ${
+                                        (error.includes("이메일로") || error.includes("개발모드")) 
+                                            ? "text-green-500" 
+                                            : "text-red-500"
+                                    }`}>
+                                        {error}
+                                    </p>
+                                )}
+                                <Button 
+                                    type="submit" 
+                                    disabled={isLoading}
+                                    className={`w-full font-semibold h-12 rounded-xl mt-2 ${darkMode ? "bg-white text-black" : "bg-black text-white"}`}
+                                >
+                                    {isLoading ? "처리 중..." : "임시 비밀번호 발송"}
+                                </Button>
+                                <button 
+                                    type="button" 
+                                    onClick={() => {
+                                        setIsForgotPasswordView(false);
+                                        setError("");
+                                    }}
+                                    className="text-[10px] font-bold opacity-40 hover:opacity-100 uppercase mt-2"
+                                >
+                                    로그인 화면으로 돌아가기
+                                </button>
+                            </form>
+                        ) : isLoginView ? (
+                            /* --- 로그인 뷰일 때 --- */
                             <form onSubmit={handleLogin} className="grid gap-4">
                                 <div className="grid gap-2">
                                     <Label className="text-[10px] font-black uppercase tracking-widest opacity-70">이메일</Label>
@@ -142,7 +218,16 @@ export default function AuthDialog() {
                                 <div className="grid gap-2">
                                     <div className="flex justify-between items-center">
                                         <Label className="text-[10px] font-black uppercase tracking-widest opacity-70">비밀번호</Label>
-                                        <button type="button" className="text-[9px] font-bold opacity-40 hover:opacity-100 uppercase">비밀번호를 잊어버리셨나요?</button>
+                                        <button 
+                                            type="button" 
+                                            onClick={() => {
+                                                setIsForgotPasswordView(true);
+                                                setError("");
+                                            }}
+                                            className="text-[9px] font-bold opacity-40 hover:opacity-100 uppercase"
+                                        >
+                                            비밀번호를 잊어버리셨나요?
+                                        </button>
                                     </div>
                                     <Input 
                                         type="password" 
@@ -213,21 +298,21 @@ export default function AuthDialog() {
 
                     <CardFooter className="flex flex-col gap-3 px-6 md:px-8 pb-10">
                         {/* SNS 구분선 (로그인 시 또는 회원가입 폼이 닫혀있을 때 표시) */}
-                        {(!showEmailForm || isLoginView) && (
+                        {(!showEmailForm || isLoginView) && !isForgotPasswordView && (
                             <div className="relative w-full my-2">
                                 <div className="absolute inset-0 flex items-center">
                                     <span className={`w-full border-t ${darkMode ? 'border-white/5' : 'border-slate-100'}`} />
                                 </div>
-                                <div className="relative flex justify-center text-xs font-black">
+                                <div className="relative flex justify-center text-xs font-semibold">
                                     <span className={`px-4 ${darkMode ? 'bg-[#121212] text-zinc-700' : 'bg-white text-slate-300'}`}>
-                                        {isLoginView ? "다른방법으로 로그인" : "Textra 시작하기"}
+                                        {isLoginView ? "다른방법으로 로그인" : "시작하기"}
                                     </span>
                                 </div>
                             </div>
                         )}
 
                         {/* 회원가입 뷰에서 폼이 닫혀있을 때만 이메일 시작 버튼 노출 */}
-                        {!isLoginView && !showEmailForm && (
+                        {!isLoginView && !showEmailForm && !isForgotPasswordView && (
                             <Button
                                 onClick={() => setShowEmailForm(true)}
                                 className={`w-full font-semibold h-12 rounded-md ${darkMode ? "bg-white text-black" : "bg-black text-white"}`}
@@ -236,16 +321,31 @@ export default function AuthDialog() {
                             </Button>
                         )}
 
-                        <KaKaoLoginButton />
-                        <GoogleLoginButton />
+                        {!isForgotPasswordView && (
+                            isLoginView ? (
+                                <>
+                                    <KaKaoLoginButton />
+                                    <GoogleLoginButton />
+                                    <NaverLoginButton />
+                                </>
+                            ) : (
+                                <>
+                                    <KaKaoJoinButton />
+                                    <GoogleJoinButton />
+                                    <NaverJoinButton />
+                                </>
+                            )
+                        )}
 
-                        <button
-                            onClick={toggleView}
-                            className={`text-[10px] font-black tracking-widest uppercase transition-colors ${
-                                darkMode ? "text-zinc-500 hover:text-white" : "text-slate-400 hover:text-slate-900"
-                            }`}>
-                            {isLoginView ? "회원이 아니신가요?" : "이미 회원이신가요?"}
-                        </button>
+                        {!isForgotPasswordView && (
+                            <button
+                                onClick={toggleView}
+                                className={`text-[10px] font-semibold tracking-widest uppercase transition-colors ${
+                                    darkMode ? "text-zinc-500 hover:text-white" : "text-slate-400 hover:text-slate-900"
+                                }`}>
+                                {isLoginView ? "회원이 아니신가요?" : "이미 회원이신가요?"}
+                            </button>
+                        )}
                     </CardFooter>
                 </Card>
             </DialogContent>
